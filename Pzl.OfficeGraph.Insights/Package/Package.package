@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package dslVersion="1.0.0.0" 
+        Id="a15d9eb0-00ec-4715-b68f-44ec913dedc0" 
+        solutionId="a15d9eb0-00ec-4715-b68f-44ec913dedc0" 
+        xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel" 
+        name="Pzl.OfficeGraph.Insights"
+        sharePointProductVersion="16.0">
+  <features>
+        <featureReference itemId="495a05f5-365f-40e9-a584-f7aef8b479ad" />
+  </features>
+</package>

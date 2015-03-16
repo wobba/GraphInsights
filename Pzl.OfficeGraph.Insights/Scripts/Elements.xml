@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <Module Name="Scripts">
+    <File Path="Scripts\App_1.js" Url="Scripts/App_1.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\sharepoint\SharePoint.d.ts" Url="Scripts/typings/sharepoint/SharePoint.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\jquery\jquery.d.ts" Url="Scripts/typings/jquery/jquery.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\App.ts" Url="Scripts/App.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\d3\plugins\d3.superformula.d.ts" Url="Scripts/typings/d3/plugins/d3.superformula.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\d3\d3.d.ts" Url="Scripts/typings/d3/d3.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\d3\LICENSE" Url="Scripts/d3/LICENSE" ReplaceContent="TRUE" />
+    <File Path="Scripts\d3\d3.min.js" Url="Scripts/d3/d3.min.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\d3\d3.js" Url="Scripts/d3/d3.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\App.js" Url="Scripts/App.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\App.js.map" Url="Scripts/App.js.map" ReplaceContent="TRUE" />
+    <File Path="Scripts\Actor.ts" Url="Scripts/Actor.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\Actor.js" Url="Scripts/Actor.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\Actor.js.map" Url="Scripts/Actor.js.map" ReplaceContent="TRUE" />
+    <File Path="Scripts\moment-with-locales.min.js" Url="Scripts/moment-with-locales.min.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\moment-with-locales.js" Url="Scripts/moment-with-locales.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\moment.min.js" Url="Scripts/moment.min.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\moment.js" Url="Scripts/moment.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\moment\moment.d.ts" Url="Scripts/typings/moment/moment.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\SearchHelper.ts" Url="Scripts/SearchHelper.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\SearchHelper.js" Url="Scripts/SearchHelper.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\SearchHelper.js.map" Url="Scripts/SearchHelper.js.map" ReplaceContent="TRUE" />
+    <File Path="Scripts\jquery-2.1.3.min.map" Url="Scripts/jquery-2.1.3.min.map" ReplaceContent="TRUE" />
+    <File Path="Scripts\jquery-2.1.3.min.js" Url="Scripts/jquery-2.1.3.min.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\jquery-2.1.3.js" Url="Scripts/jquery-2.1.3.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\jquery-2.1.3.intellisense.js" Url="Scripts/jquery-2.1.3.intellisense.js" ReplaceContent="TRUE" />
+  </Module>
+</Elements>
