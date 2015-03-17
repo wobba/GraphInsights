@@ -28,5 +28,8 @@
     <ProjectItemFile Source="jquery-2.1.3.min.js" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="jquery-2.1.3.js" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="jquery-2.1.3.intellisense.js" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="typings\q\Q.d.ts" Target="Scripts\typings\q\" Type="ElementFile" />
+    <ProjectItemFile Source="q.min.js" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="q.js" Target="Scripts\" Type="ElementFile" />
   </Files>
 </ProjectItem>

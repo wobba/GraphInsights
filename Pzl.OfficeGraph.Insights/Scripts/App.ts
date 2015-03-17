@@ -8,28 +8,21 @@
 
 function initializePage()
 {
-    var context = SP.ClientContext.get_current();
-    var user = context.get_web().get_currentUser();
     // This code runs when the DOM is ready and creates a context object which is needed to use the SharePoint object model
-    $(document).ready(function () {
-        getUserName();
+    jQuery(document).ready(function () {
+        SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor", () => {
+            var helper = new Pzl.OfficeGraph.Insight.SearchHelper();
+            //helper.loadActorsByQuery("mikael svenson").then(actors => {
+            helper.loadColleagues().then(actors => {
+                console.log("actors count: " + actors.length);
+                for (var i = 0; i < actors.length; i++) {
+                    //alert(actors[i].name);
+                }
+            });
+        });
     });
-
-    // This function prepares, loads, and then executes a SharePoint query to get the current users information
-    function getUserName() {
-        context.load(user);
-        context.executeQueryAsync(onGetUserNameSuccess, onGetUserNameFail);
-    }
-
-    // This function is executed if the above call is successful
-    // It replaces the contents of the 'message' element with the user name
-    function onGetUserNameSuccess() {
-        $('#message').text('Hello ' + user.get_title());
-    }
-
-    // This function is executed if the above call fails
-    function onGetUserNameFail(sender, args) {
-        alert('Failed to get user name. Error:' + args.get_message());
-    }
 }
 
+SP.SOD.executeFunc("sp.js", null, () => {
+    initializePage();
+});

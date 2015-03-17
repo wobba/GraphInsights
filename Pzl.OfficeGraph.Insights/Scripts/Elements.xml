@@ -27,5 +27,8 @@
     <File Path="Scripts\jquery-2.1.3.min.js" Url="Scripts/jquery-2.1.3.min.js" ReplaceContent="TRUE" />
     <File Path="Scripts\jquery-2.1.3.js" Url="Scripts/jquery-2.1.3.js" ReplaceContent="TRUE" />
     <File Path="Scripts\jquery-2.1.3.intellisense.js" Url="Scripts/jquery-2.1.3.intellisense.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\typings\q\Q.d.ts" Url="Scripts/typings/q/Q.d.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\q.min.js" Url="Scripts/q.min.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\q.js" Url="Scripts/q.js" ReplaceContent="TRUE" />
   </Module>
 </Elements>

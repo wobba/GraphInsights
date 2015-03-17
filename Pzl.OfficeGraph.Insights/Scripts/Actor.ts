@@ -3,13 +3,13 @@
 
 module Pzl.OfficeGraph.Insight {
     export class Actor {
-         id: number;
-         name: string;
-         accountName: string;
-         pictureUrl: string;
-         gender: Gender;
-         age: number;
-         edges: Edge[];
+        id: number;
+        name: string;
+        accountName: string;
+        pictureUrl: string;
+        gender: Gender;
+        age: number;
+        edges: Edge[];
 
         //constructor() {
         //    this.id = workId;
@@ -26,6 +26,16 @@ module Pzl.OfficeGraph.Insight {
                 }
             }
             return count;
+        }
+
+        getModificationsPerDay() {
+            var start = this.getMinEdgeDate();
+            var end = this.getMaxEdgeDate();
+            var ms = moment(end).diff(moment(start));
+            var d = moment.duration(ms);
+            var days = d.days();
+            var mods = this.getNumberOfModifications();
+            return Math.round(mods / days);
         }
 
         private getMinEdgeDate() {
@@ -53,16 +63,6 @@ module Pzl.OfficeGraph.Insight {
             }
             return date;
         }
-
-        getModificationsPerDay() {
-            var start = this.getMinEdgeDate();
-            var end = this.getMaxEdgeDate();
-            var ms = moment(end).diff(moment(start));
-            var d = moment.duration(ms);
-            var days = d.days();
-            var mods = this.getNumberOfModifications();
-            return Math.round(mods / days);
-        }
     }
 
     export class Edge {
@@ -79,7 +79,7 @@ module Pzl.OfficeGraph.Insight {
 
     export enum Action {
         Modified = 1003,
-        Colleague =1015,
+        Colleague = 1015,
         WorkingWithPublic = 1033,
         Manager = 1013
     }

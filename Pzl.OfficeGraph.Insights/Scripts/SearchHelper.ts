@@ -1,88 +1,105 @@
 ﻿/// <reference path="typings/sharepoint/SharePoint.d.ts" />
 /// <reference path="typings/jquery/jquery.d.ts" />
+/// <reference path="typings/q/Q.d.ts" />
 "use strict";
 
 module Pzl.OfficeGraph.Insight {
 
     export class SearchHelper {
-        postJson(payload, success, failure) {
+        private postJson(payload, success, failure) {
+            var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
             $.ajax({
                 type: "POST",
                 headers: {
-                    "accept": "application/json;odata=minimal",
-                    "content-type": "application/json;odata=minimal",
+                    "accept": "application/json;odata=minimalmetadata",
+                    "content-type": "application/json;odata=minimalmetadata",
                     "X-RequestDigest": $("#__REQUESTDIGEST").val()
                 },
                 data: JSON.stringify(payload),
-                url: _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery",
+                url: searchUrl,
                 success: success,
-                failure: failure
+                error: failure
             });
         }
 
-        executeActorQuery(query: string) {
-            var result = jQuery.Deferred();
-            //var dfd = $.Deferred<void>();
+        loadActorsByQuery(query: string): Q.Promise<Actor[]> {
+            var deferred = Q.defer<Actor[]>();
 
             var searchPayload = {
                 'request': {
-                    '__metadata': { 'type': "Microsoft.Office.Server.Search.REST.SearchRequest" },
                     'Querytext': query,
                     'RowLimit': 500,
-                    'SourceId': "b09a7990-05ea-4af9-81ef-edfab16c4e31"
+                    'SourceId': "b09a7990-05ea-4af9-81ef-edfab16c4e31",
+                    'ClientType': 'PzlGraphInsight'
                 }
             };
 
             this.postJson(searchPayload, data => {
+                var actors: Actor[] = [];
                 var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
                 for (var i = 0; i < resultsCount; i++) {
                     var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
                     var actor = this.parseActorResults(row);
+                    actors.push(actor);
                 }
+                deferred.resolve(actors);
             },
                 error => {
                     console.log(JSON.stringify(error));
+                    deferred.reject(JSON.stringify(error));
                 });
+            return deferred.promise;
         }
 
-        executeGraphQuery(query: string, graphQuery: string) {
-            var searchPayload = {
-                'request': {
-                    '__metadata': { 'type': "Microsoft.Office.Server.Search.REST.SearchRequest" },
-                    'Querytext': query,
-                    'RowLimit': 500,
-                    'RankingModelId': "0c77ded8-c3ef-466d-929d-905670ea1d72",
-                    'Properties': {
-                        'results': [
-                            {
-                                'Name': "GraphQuery",
-                                'Value': { 'StrVal': graphQuery, 'QueryPropertyValueTypeIndex': 1 }
-                            },
-                            {
-                                'Name': "GraphRankingModel",
-                                'Value': {
-                                    'StrVal': "{\"features\":[{\"function\":\"EdgeTime\"}]}",
-                                    'QueryPropertyValueTypeIndex': 1
-                                }
-                            }]
-                    }
-                }
-            };
+        loadColleagues(): Q.Promise<Actor[]> {
+            var deferred = Q.defer<Actor[]>();
+
+            var searchPayload = this.getPayload("*", "ACTOR(ME, action:1015)");
 
             this.postJson(searchPayload, data => {
+                var actors: Actor[] = [];
                 var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
                 for (var i = 0; i < resultsCount; i++) {
                     var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
+                    var actor = this.parseActorResults(row);
+                    actors.push(actor);
                 }
+                deferred.resolve(actors);
             },
                 error => {
                     console.log(JSON.stringify(error));
+                    deferred.reject(JSON.stringify(error));
                 });
+            return deferred.promise;
         }
 
-        parseActorResults(row): Actor {
+        private getPayload(query: string, graphQuery: string) {
+            return {
+                "request": {
+                    "Querytext": query,
+                    "RowLimit": 500,
+                    "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
+                    "ClientType": "PzlGraphInsight",
+                    "Properties": [
+                        {
+                            "Name": "GraphQuery",
+                            "Value": { "StrVal": graphQuery, "QueryPropertyValueTypeIndex": 1 }
+                        },
+                        {
+                            "Name": "GraphRankingModel",
+                            "Value": {
+                                "StrVal": "{\"features\":[{\"function\":\"EdgeTime\"}]}",
+                                "QueryPropertyValueTypeIndex": 1
+                            }
+                        }]
+                    }
+                };
+        }
+
+        private parseActorResults(row): Actor {
             var actor = new Actor();
-            for (var cell in row.Cells) {
+            for (var i = 0; i < row.Cells.length; i++) {
+                var cell = row.Cells[i];
                 if (cell.Key === 'PreferredName') {
                     actor.name = cell.Value;
                 } else if (cell.Key === 'PictureURL') {

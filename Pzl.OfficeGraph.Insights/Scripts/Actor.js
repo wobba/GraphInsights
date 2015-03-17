@@ -24,6 +24,15 @@ var Pzl;
                     }
                     return count;
                 };
+                Actor.prototype.getModificationsPerDay = function () {
+                    var start = this.getMinEdgeDate();
+                    var end = this.getMaxEdgeDate();
+                    var ms = moment(end).diff(moment(start));
+                    var d = moment.duration(ms);
+                    var days = d.days();
+                    var mods = this.getNumberOfModifications();
+                    return Math.round(mods / days);
+                };
                 Actor.prototype.getMinEdgeDate = function () {
                     var date = new Date(2099, 12, 31);
                     var edges = this.edges;
@@ -47,15 +56,6 @@ var Pzl;
                         }
                     }
                     return date;
-                };
-                Actor.prototype.getModificationsPerDay = function () {
-                    var start = this.getMinEdgeDate();
-                    var end = this.getMaxEdgeDate();
-                    var ms = moment(end).diff(moment(start));
-                    var d = moment.duration(ms);
-                    var days = d.days();
-                    var mods = this.getNumberOfModifications();
-                    return Math.round(mods / days);
                 };
                 return Actor;
             })();
