@@ -9,18 +9,10 @@ var Pzl;
             var Actor = (function () {
                 function Actor() {
                 }
-                //constructor() {
-                //    this.id = workId;
-                //}
-                Actor.prototype.getNumberOfModifications = function () {
+                Actor.prototype.getNumberOfModificationsByYou = function () {
                     var count = 0;
-                    var edges = this.edges;
-                    for (var edge in edges) {
-                        if (edges.hasOwnProperty(edge)) {
-                            if (edge.action === 1003 /* Modified */) {
-                                count += edge.weight;
-                            }
-                        }
+                    for (var i = 0; i < this.items.length; i++) {
+                        count = count + this.items[i].getNumberOfEditsByActor(this, 0 /* ActorOnly */);
                     }
                     return count;
                 };
@@ -30,29 +22,25 @@ var Pzl;
                     var ms = moment(end).diff(moment(start));
                     var d = moment.duration(ms);
                     var days = d.days();
-                    var mods = this.getNumberOfModifications();
+                    var mods = this.getNumberOfModificationsByYou();
                     return Math.round(mods / days);
                 };
                 Actor.prototype.getMinEdgeDate = function () {
                     var date = new Date(2099, 12, 31);
-                    var edges = this.edges;
-                    for (var edge in edges) {
-                        if (edges.hasOwnProperty(edge)) {
-                            if (edge.time < date) {
-                                date = edge.time;
-                            }
+                    for (var i = 0; i < this.items.length; i++) {
+                        var itemDate = this.items[i].getMinDateEdge();
+                        if (itemDate < date) {
+                            date = itemDate;
                         }
                     }
                     return date;
                 };
                 Actor.prototype.getMaxEdgeDate = function () {
                     var date = new Date(1970, 1, 1);
-                    var edges = this.edges;
-                    for (var edge in edges) {
-                        if (edges.hasOwnProperty(edge)) {
-                            if (edge.time > date) {
-                                date = edge.time;
-                            }
+                    for (var i = 0; i < this.items.length; i++) {
+                        var itemDate = this.items[i].getMaxDateEdge();
+                        if (itemDate > date) {
+                            date = itemDate;
                         }
                     }
                     return date;

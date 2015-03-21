@@ -311,6 +311,7 @@ declare class _spPageContextInfo {
     static systemUserKey: string; //"i:0h.f|membership|10033fff84e7cb2b@live.com"
     static tenantAppVersion: string; //"0"
     static userId: number; //12
+    static userLoginName: string;
     static webAbsoluteUrl: string; //"https://gandjustas-7b20d3715e8ed4.sharepoint.com/SPTypeScript"
     static webLanguage: number; //1049
     static webLogoUrl: string; //"/_layouts/15/images/siteIcon.png?rev=23"

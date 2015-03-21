@@ -8,10 +8,15 @@ function initializePage() {
     jQuery(document).ready(function () {
         SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor", function () {
             var helper = new Pzl.OfficeGraph.Insight.SearchHelper();
-            //helper.loadActorsByQuery("mikael svenson").then(actors => {
-            helper.loadColleagues().then(function (actors) {
-                console.log("actors count: " + actors.length);
-                for (var i = 0; i < actors.length; i++) {
+            helper.loadAllOfMe().done(function (me) {
+                console.log(me.name + " has " + me.associates.length + " associates and " + me.items.length + " items and " + me.collabItems.length + " collab items");
+                for (var i = 0; i < me.associates.length; i++) {
+                    var c = me.associates[i];
+                    helper.populateActor(c).done(function (c) {
+                        if (c.items.length === 0)
+                            return;
+                        console.log(c.name + " has " + c.associates.length + " associates and " + c.items.length + " items and " + c.collabItems.length + " collab items");
+                    });
                 }
             });
         });

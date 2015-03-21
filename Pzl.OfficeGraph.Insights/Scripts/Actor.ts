@@ -9,21 +9,14 @@ module Pzl.OfficeGraph.Insight {
         pictureUrl: string;
         gender: Gender;
         age: number;
-        edges: Edge[];
+        items: Item[];
+        collabItems: Item[];
+        associates: Actor[];
 
-        //constructor() {
-        //    this.id = workId;
-        //}
-
-        getNumberOfModifications() {
+        getNumberOfModificationsByYou() {
             var count = 0;
-            var edges = this.edges;
-            for (var edge in edges) {
-                if (edges.hasOwnProperty(edge)) {
-                    if (edge.action === Action.Modified) {
-                        count += edge.weight;
-                    }
-                }
+            for (var i = 0; i < this.items.length; i++) {
+                count = count + this.items[i].getNumberOfEditsByActor(this, Inclusion.ActorOnly);
             }
             return count;
         }
@@ -34,18 +27,16 @@ module Pzl.OfficeGraph.Insight {
             var ms = moment(end).diff(moment(start));
             var d = moment.duration(ms);
             var days = d.days();
-            var mods = this.getNumberOfModifications();
+            var mods = this.getNumberOfModificationsByYou();
             return Math.round(mods / days);
         }
 
         private getMinEdgeDate() {
             var date = new Date(2099, 12, 31);
-            var edges = this.edges;
-            for (var edge in edges) {
-                if (edges.hasOwnProperty(edge)) {
-                    if (edge.time < date) {
-                        date = edge.time;
-                    }
+            for (var i = 0; i < this.items.length; i++) {
+                var itemDate = this.items[i].getMinDateEdge();
+                if (itemDate < date) {
+                    date = itemDate;
                 }
             }
             return date;
@@ -53,12 +44,10 @@ module Pzl.OfficeGraph.Insight {
 
         private getMaxEdgeDate() {
             var date = new Date(1970, 1, 1);
-            var edges = this.edges;
-            for (var edge in edges) {
-                if (edges.hasOwnProperty(edge)) {
-                    if (edge.time > date) {
-                        date = edge.time;
-                    }
+            for (var i = 0; i < this.items.length; i++) {
+                var itemDate = this.items[i].getMaxDateEdge();
+                if (itemDate > date) {
+                    date = itemDate;
                 }
             }
             return date;
@@ -67,6 +56,7 @@ module Pzl.OfficeGraph.Insight {
 
     export class Edge {
         actorId: number;
+        objectId: number;
         action: Action;
         time: Date;
         weight: number;

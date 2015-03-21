@@ -30,5 +30,8 @@
     <File Path="Scripts\typings\q\Q.d.ts" Url="Scripts/typings/q/Q.d.ts" ReplaceContent="TRUE" />
     <File Path="Scripts\q.min.js" Url="Scripts/q.min.js" ReplaceContent="TRUE" />
     <File Path="Scripts\q.js" Url="Scripts/q.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\Item.ts" Url="Scripts/Item.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\Item.js" Url="Scripts/Item.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\Item.js.map" Url="Scripts/Item.js.map" ReplaceContent="TRUE" />
   </Module>
 </Elements>

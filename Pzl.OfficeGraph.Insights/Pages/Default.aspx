@@ -13,6 +13,7 @@
     <script type="text/javascript" src="../Scripts/q.js"></script>
     <script type="text/javascript" src="../Scripts/Actor.js"></script>
     <script type="text/javascript" src="../Scripts/SearchHelper.js"></script>
+    <script type="text/javascript" src="../Scripts/Item.js"></script>
     <SharePoint:ScriptLink name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
     <meta name="WebPartPageExpansion" content="full" />
 
