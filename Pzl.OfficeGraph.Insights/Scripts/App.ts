@@ -99,7 +99,7 @@ module Pzl.OfficeGraph.Insight {
 
         } catch (e) {
             //alert(e);
-            jQuery("log").prepend(e);
+            jQuery("#log").prepend(e);
             console.log(e.message);
         }
 
