@@ -26,14 +26,14 @@
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    Pzl Edge Insights
+    Pzl Edge Insights aka Co-author Monitor
 </asp:Content>
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
 
     <div style="width: 100%">
-        <div id="message" style="float: left; width: 50%">&nbsp;
+        <div id="message" style="float: left; width: 50%">
         </div>
         <div id="log" style="float: left; width: 45%; height: 400px; border: solid 1px black; overflow:scroll">
         </div>

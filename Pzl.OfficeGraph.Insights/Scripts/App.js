@@ -9,7 +9,7 @@ var Pzl;
     (function (OfficeGraph) {
         var Insight;
         (function (Insight) {
-            var mostCollabItems = 0, mostCollabItemsActor, minCollabItems = 0, minCollabItemsActor, maxCollaborators = 0, maxCollaboratorsActor, maxEditsPerItemAverage = 0, maxEditsPerItemAverageActor, maxEgo = 0, maxEgoActor, zeroCollaborators = [];
+            var mostCollabItems = 0, mostCollabItemsActor, minCollabItems = 200000, minCollabItemsActor, maxCollaborators = 0, maxCollaboratorsActor, maxEditsPerItemAverage = 0, maxEditsPerItemAverageActor, maxEgo = 0, maxEgoActor, maxCreator = 0, maxCreatorActor, maxModifier = 0, maxModifierActor, longestItem, zeroCollaborators = [];
             //maxEditsPerDay = 0,
             //maxEditsPerDayActor;
             function updateStats(actor) {
@@ -41,8 +41,22 @@ var Pzl;
                         maxEgo = thisMaxEgo;
                         maxEgoActor = actor;
                     }
+                    var thisLongestItem = actor.getLongestLivingItemWithCollab();
+                    if (longestItem === undefined || (thisLongestItem !== undefined && thisLongestItem.itemLifeSpanInDays() > longestItem.itemLifeSpanInDays())) {
+                        longestItem = thisLongestItem;
+                    }
+                    var thisMaxCreator = actor.getStarterCount();
+                    if (thisMaxCreator > maxCreator) {
+                        maxCreator = thisMaxCreator;
+                        maxCreatorActor = actor;
+                    }
+                    var thismaxModifier = actor.getLastSaverCount();
+                    if (thismaxModifier > maxModifier) {
+                        maxModifier = thismaxModifier;
+                        maxModifierActor = actor;
+                    }
                     jQuery("#message").empty();
-                    jQuery("#message").append("<p>Most active collaborator is <b>" + mostCollabItemsActor.name + "</b> with <b>" + mostCollabItems + "</b> items as co-author");
+                    jQuery("#message").append("<p>Most active collaborator is <b>" + mostCollabItemsActor.name + "</b> co-authoring on <b>" + mostCollabItems + "</b> items");
                     if (zeroCollaborators.length > 0) {
                         jQuery("#message").append("<p>The bunch of <b>" + zeroCollaborators.join(", ").replace(/,([^,]*)$/, '</b> and <b>$1') + "</b> refuse to collaborate in public");
                     }
@@ -50,10 +64,15 @@ var Pzl;
                         jQuery("#message").append("<p>Most selfish collaborator is <b>" + minCollabItemsActor.name + "</b> with only <b>" + minCollabItems + "</b> items as co-author");
                     }
                     jQuery("#message").append("<p>Most social collaborator is <b>" + maxCollaboratorsActor.name + "</b> with a reach of <b>" + maxCollaborators + "</b> colleagues");
-                    jQuery("#message").append("<p>Most ego is <b>" + maxEgoActor.name + "</b> with <b>" + maxEgo + "</b> items produced all alone (vs. " + maxEgoActor.getCollaborationItemCount() + " collab)");
+                    jQuery("#message").append("<p>Most active ego content producer is <b>" + maxEgoActor.name + "</b> with <b>" + maxEgo + "</b> items produced all alone (vs. " + maxEgoActor.getCollaborationItemCount() + " collab)");
                     jQuery("#message").append("<p><b>" + maxEditsPerItemAverageActor.name + "</b> is the most frequent saver with an average of <b>" + maxEditsPerItemAverage + "</b> saves per item ");
+                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> can't let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+                    jQuery("#message").append("<p>#1 item starter is <b>" + maxCreatorActor.name + "</b> igniting a whopping <b>" + maxCreator + "</b> items");
+                    jQuery("#message").append("<p>Last dude on the ball <b>" + maxModifier + "</b> times was <b>" + maxModifierActor.name + "</b>");
                 }
                 catch (e) {
+                    //alert(e);
+                    jQuery("log").prepend(e);
                     console.log(e.message);
                 }
             }

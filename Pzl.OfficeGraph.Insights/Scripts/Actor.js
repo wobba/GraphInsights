@@ -87,25 +87,48 @@ var Pzl;
                     }
                     return uniqueActors.length;
                 };
-                Actor.prototype.getMinEdgeDate = function () {
-                    var date = new Date(2099, 12, 31);
-                    for (var i = 0; i < this.collabItems.length; i++) {
-                        var itemDate = this.collabItems[i].getMinDateEdge(this.id);
-                        if (itemDate < date) {
-                            date = itemDate;
+                // Find oldest created date with more than two authors
+                Actor.prototype.getLongestLivingItemWithCollab = function () {
+                    var oldestItem;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() > 1) {
+                                if (oldestItem === undefined || item.itemLifeSpanInDays() > oldestItem.itemLifeSpanInDays()) {
+                                    oldestItem = item;
+                                }
+                            }
                         }
                     }
-                    return date;
+                    return oldestItem;
                 };
-                Actor.prototype.getMaxEdgeDate = function () {
-                    var date = new Date(1970, 1, 1);
-                    for (var i = 0; i < this.collabItems.length; i++) {
-                        var itemDate = this.collabItems[i].getMaxDateEdge();
-                        if (itemDate > date) {
-                            date = itemDate;
+                Actor.prototype.getStarterCount = function () {
+                    var creatorCount = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() > 1) {
+                                if (item.actorIsCreator(this)) {
+                                    creatorCount++;
+                                }
+                            }
                         }
                     }
-                    return date;
+                    return creatorCount;
+                };
+                Actor.prototype.getLastSaverCount = function () {
+                    var saverCount = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() > 1) {
+                                if (item.actorIsLastModifed(this)) {
+                                    saverCount++;
+                                }
+                            }
+                        }
+                    }
+                    return saverCount;
                 };
                 return Actor;
             })();

@@ -209,7 +209,7 @@ module Pzl.OfficeGraph.Insight {
                     "TrimDuplicates": false,
                     "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                     //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
-                    'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'DocId', 'Edges'],
+                    'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'ModifiedBy', 'DocId', 'Edges'],
                     "ClientType": "PzlGraphInsight",
                     "Properties": [
                         {
@@ -266,36 +266,6 @@ module Pzl.OfficeGraph.Insight {
                 }
             }
             return actor;
-
-            //$(row.Cells.results).each(function (ii, ee:any) {
-            //    if (ee.Key == 'PreferredName')
-            //        actor.name = ee.Value;
-            //        o.title = ee.Value;
-            //    else if (ee.Key == 'PictureURL')
-            //        o.pic = ee.Value;
-            //    else if (ee.Key == 'JobTitle')
-            //        o.text1 = ee.Value;
-            //    else if (ee.Key == 'Department')
-            //        o.text2 = ee.Value;
-            //    else if (ee.Key == 'Path')
-            //        o.path = ee.Value;
-            //    else if (ee.Key == 'DocId')
-            //        o.docId = ee.Value;
-            //    else if (ee.Key == 'Rank')
-            //        o.rank = parseFloat(ee.Value);
-            //    else if (ee.Key == 'Edges') {
-            //        //get the highest edge weight
-            //        var edges = JSON.parse(ee.Value);
-            //        o.objectId = edges[0].ObjectId;
-            //        o.actorId = edges[0].ActorId;
-            //        $(edges).each(function (i, e) {
-            //            var w = parseInt(e.Properties.Weight);
-            //            if (o.edgeWeight == null || w > o.edgeWeight)
-            //                o.edgeWeight = w;
-            //        });
-            //    }
-            //});
-            //return o;
         }
 
         private parseItemResults(row): Item {
@@ -307,7 +277,9 @@ module Pzl.OfficeGraph.Insight {
                 } else if (cell.Key === 'AuthorOWSUSER') {
                     item.createdBy = cell.Value;
                 } else if (cell.Key === 'EditorOWSUSER') {
-                    item.lastModifiedBy = cell.Value;
+                    item.lastModifiedByAccount = cell.Value;
+                } else if (cell.Key === 'ModifiedBy') {
+                    item.lastModifiedByName = cell.Value;
                 } else if (cell.Key === 'DocId') {
                     item.id = parseInt(cell.Value);
                 } else if (cell.Key === 'Write') {

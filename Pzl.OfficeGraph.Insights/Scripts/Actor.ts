@@ -10,7 +10,6 @@ module Pzl.OfficeGraph.Insight {
         pictureUrl: string;
         gender: Gender;
         age: number;
-        //items: Item[];
         collabItems: Item[];
         associates: Actor[];
 
@@ -96,27 +95,73 @@ module Pzl.OfficeGraph.Insight {
             return uniqueActors.length;
         }
 
-        private getMinEdgeDate() {
-            var date = new Date(2099, 12, 31);
-            for (var i = 0; i < this.collabItems.length; i++) {
-                var itemDate = this.collabItems[i].getMinDateEdge(this.id);
-                if (itemDate < date) {
-                    date = itemDate;
+        // Find oldest created date with more than two authors
+        getLongestLivingItemWithCollab(): Item {
+            var oldestItem: Item;
+            if (this.collabItems) {
+                for (var i = 0; i < this.collabItems.length; i++) {
+                    var item = this.collabItems[i];
+                    if (item.getNumberOfContributors() > 1) {
+                        if (oldestItem === undefined || item.itemLifeSpanInDays() > oldestItem.itemLifeSpanInDays()) {
+                            oldestItem = item;
+                        }
+                    }
                 }
             }
-            return date;
+            return oldestItem;
         }
 
-        private getMaxEdgeDate() {
-            var date = new Date(1970, 1, 1);
-            for (var i = 0; i < this.collabItems.length; i++) {
-                var itemDate = this.collabItems[i].getMaxDateEdge();
-                if (itemDate > date) {
-                    date = itemDate;
+        getStarterCount(): number {
+            var creatorCount = 0;
+            if (this.collabItems) {
+                for (var i = 0; i < this.collabItems.length; i++) {
+                    var item = this.collabItems[i];
+                    if (item.getNumberOfContributors() > 1) {
+                        if (item.actorIsCreator(this)) {
+                            creatorCount++;
+                        }
+                    }
                 }
             }
-            return date;
+            return creatorCount;
         }
+
+        getLastSaverCount(): number {
+            var saverCount = 0;
+            if (this.collabItems) {
+                for (var i = 0; i < this.collabItems.length; i++) {
+                    var item = this.collabItems[i];
+                    if (item.getNumberOfContributors() > 1) {
+                        if (item.actorIsLastModifed(this)) {
+                            saverCount++;
+                        }
+                    }
+                }
+            }
+            return saverCount;
+        }
+
+        //private getMinEdgeDate() {
+        //    var date = new Date(2099, 12, 31);
+        //    for (var i = 0; i < this.collabItems.length; i++) {
+        //        var itemDate = this.collabItems[i].getMinDateEdge(this.id);
+        //        if (itemDate < date) {
+        //            date = itemDate;
+        //        }
+        //    }
+        //    return date;
+        //}
+
+        //private getMaxEdgeDate() {
+        //    var date = new Date(1970, 1, 1);
+        //    for (var i = 0; i < this.collabItems.length; i++) {
+        //        var itemDate = this.collabItems[i].getMaxDateEdge();
+        //        if (itemDate > date) {
+        //            date = itemDate;
+        //        }
+        //    }
+        //    return date;
+        //}
     }
 
     export class Edge {

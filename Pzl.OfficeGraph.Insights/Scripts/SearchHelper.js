@@ -64,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -89,13 +89,13 @@ var Pzl;
                         // if no associates replace with backup actors
                         actor.associates = this.backupActorAssociates;
                     }
-                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
+                    var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
                     var parts = [];
                     parts.push(template.replace("#ID#", actor.id.toString()));
                     for (var j = 0; j < actor.associates.length; j++) {
                         parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
                     }
-                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
+                    var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
                     this.postJson(searchPayload, function (data) {
                         var items = [];
@@ -188,7 +188,7 @@ var Pzl;
                             "TrimDuplicates": false,
                             "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                             //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
-                            'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'DocId', 'Edges'],
+                            'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'ModifiedBy', 'DocId', 'Edges'],
                             "ClientType": "PzlGraphInsight",
                             "Properties": [
                                 {
@@ -248,35 +248,6 @@ var Pzl;
                         }
                     }
                     return actor;
-                    //$(row.Cells.results).each(function (ii, ee:any) {
-                    //    if (ee.Key == 'PreferredName')
-                    //        actor.name = ee.Value;
-                    //        o.title = ee.Value;
-                    //    else if (ee.Key == 'PictureURL')
-                    //        o.pic = ee.Value;
-                    //    else if (ee.Key == 'JobTitle')
-                    //        o.text1 = ee.Value;
-                    //    else if (ee.Key == 'Department')
-                    //        o.text2 = ee.Value;
-                    //    else if (ee.Key == 'Path')
-                    //        o.path = ee.Value;
-                    //    else if (ee.Key == 'DocId')
-                    //        o.docId = ee.Value;
-                    //    else if (ee.Key == 'Rank')
-                    //        o.rank = parseFloat(ee.Value);
-                    //    else if (ee.Key == 'Edges') {
-                    //        //get the highest edge weight
-                    //        var edges = JSON.parse(ee.Value);
-                    //        o.objectId = edges[0].ObjectId;
-                    //        o.actorId = edges[0].ActorId;
-                    //        $(edges).each(function (i, e) {
-                    //            var w = parseInt(e.Properties.Weight);
-                    //            if (o.edgeWeight == null || w > o.edgeWeight)
-                    //                o.edgeWeight = w;
-                    //        });
-                    //    }
-                    //});
-                    //return o;
                 };
                 SearchHelper.prototype.parseItemResults = function (row) {
                     var item = new Insight.Item();
@@ -289,7 +260,10 @@ var Pzl;
                             item.createdBy = cell.Value;
                         }
                         else if (cell.Key === 'EditorOWSUSER') {
-                            item.lastModifiedBy = cell.Value;
+                            item.lastModifiedByAccount = cell.Value;
+                        }
+                        else if (cell.Key === 'ModifiedBy') {
+                            item.lastModifiedByName = cell.Value;
                         }
                         else if (cell.Key === 'DocId') {
                             item.id = parseInt(cell.Value);

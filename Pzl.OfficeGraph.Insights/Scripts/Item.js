@@ -33,7 +33,7 @@ var Pzl;
                     return this.createdBy.indexOf(actor.accountName) >= 0;
                 };
                 Item.prototype.actorIsLastModifed = function (actor) {
-                    return this.lastModifiedBy.indexOf(actor.accountName) >= 0;
+                    return this.lastModifiedByAccount.indexOf(actor.accountName) >= 0;
                 };
                 Item.prototype.getMinDateEdge = function (actorId) {
                     var date = new Date(2099, 12, 31);

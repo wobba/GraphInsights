@@ -6,7 +6,8 @@ module Pzl.OfficeGraph.Insight {
         id: number;
         title: string;
         createdBy: string;
-        lastModifiedBy: string;
+        lastModifiedByAccount: string;
+        lastModifiedByName: string;
         createdDate: Date;
         lastModifiedDate: Date;
         rawEdges: Edge[];
@@ -40,7 +41,7 @@ module Pzl.OfficeGraph.Insight {
         }
 
         actorIsLastModifed(actor: Actor): boolean {
-            return this.lastModifiedBy.indexOf(actor.accountName) >= 0;
+            return this.lastModifiedByAccount.indexOf(actor.accountName) >= 0;
         }
 
         getMinDateEdge(actorId : number): Date {
