@@ -1,4 +1,5 @@
 /// <reference path="typings/moment/moment.d.ts" />
+///<reference path="typings/jquery/jquery.d.ts" /> 
 "use strict";
 var Pzl;
 (function (Pzl) {
@@ -9,26 +10,87 @@ var Pzl;
             var Actor = (function () {
                 function Actor() {
                 }
-                Actor.prototype.getNumberOfModificationsByYou = function () {
+                // Average number of recorded saves per item
+                Actor.prototype.getItemModificationsAverage = function () {
                     var count = 0;
-                    for (var i = 0; i < this.items.length; i++) {
-                        count = count + this.items[i].getNumberOfEditsByActor(this, 0 /* ActorOnly */);
+                    for (var i = 0; i < this.collabItems.length; i++) {
+                        count = count + this.collabItems[i].getNumberOfEditsByActor(this, Insight.Inclusion.ActorOnly);
+                    }
+                    return Math.round(count / this.collabItems.length);
+                };
+                // Average number of recorded saves per item
+                Actor.prototype.getEgoSaveCount = function () {
+                    var meOnly = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() === 1) {
+                                meOnly++;
+                            }
+                        }
+                    }
+                    return meOnly;
+                };
+                //getModificationsPerDay(): number {
+                //    var start = this.getMinEdgeDate();
+                //    var end = this.getMaxEdgeDate();
+                //    var ms = moment(end).diff(moment(start));
+                //    var d = moment.duration(ms);
+                //    var days = d.days();
+                //    if (days === 0) { days = 1 };
+                //    var mods = this.getNumberOfModificationsByYou();
+                //    //return Math.round(mods / days);
+                //    console.log(days + ":" + mods + " - " + start + ":" + end);
+                //    return mods / days;
+                //}
+                Actor.prototype.getCollaborationRatio = function () {
+                    var meOnly = 0;
+                    var all = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() === 1) {
+                                meOnly++;
+                            }
+                            else {
+                                all++;
+                            }
+                        }
+                    }
+                    return meOnly / all;
+                };
+                // Item count with at least 2 authors
+                Actor.prototype.getCollaborationItemCount = function () {
+                    var count = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            if (item.getNumberOfContributors() > 1) {
+                                count++;
+                            }
+                        }
                     }
                     return count;
                 };
-                Actor.prototype.getModificationsPerDay = function () {
-                    var start = this.getMinEdgeDate();
-                    var end = this.getMaxEdgeDate();
-                    var ms = moment(end).diff(moment(start));
-                    var d = moment.duration(ms);
-                    var days = d.days();
-                    var mods = this.getNumberOfModificationsByYou();
-                    return Math.round(mods / days);
+                // Get all actors a user collaborates with
+                Actor.prototype.getCollaborationActorCount = function () {
+                    var uniqueActors = [];
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var actorIds = this.collabItems[i].getContributorActorIds();
+                            for (var j = 0; j < actorIds.length; j++) {
+                                if (uniqueActors.indexOf(actorIds[j]) === -1) {
+                                    uniqueActors.push(actorIds[j]);
+                                }
+                            }
+                        }
+                    }
+                    return uniqueActors.length;
                 };
                 Actor.prototype.getMinEdgeDate = function () {
                     var date = new Date(2099, 12, 31);
-                    for (var i = 0; i < this.items.length; i++) {
-                        var itemDate = this.items[i].getMinDateEdge();
+                    for (var i = 0; i < this.collabItems.length; i++) {
+                        var itemDate = this.collabItems[i].getMinDateEdge(this.id);
                         if (itemDate < date) {
                             date = itemDate;
                         }
@@ -37,8 +99,8 @@ var Pzl;
                 };
                 Actor.prototype.getMaxEdgeDate = function () {
                     var date = new Date(1970, 1, 1);
-                    for (var i = 0; i < this.items.length; i++) {
-                        var itemDate = this.items[i].getMaxDateEdge();
+                    for (var i = 0; i < this.collabItems.length; i++) {
+                        var itemDate = this.collabItems[i].getMaxDateEdge();
                         if (itemDate > date) {
                             date = itemDate;
                         }

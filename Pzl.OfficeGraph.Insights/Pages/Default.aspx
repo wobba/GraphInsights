@@ -14,7 +14,7 @@
     <script type="text/javascript" src="../Scripts/Actor.js"></script>
     <script type="text/javascript" src="../Scripts/SearchHelper.js"></script>
     <script type="text/javascript" src="../Scripts/Item.js"></script>
-    <SharePoint:ScriptLink name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
     <meta name="WebPartPageExpansion" content="full" />
 
     <!-- Add your CSS styles to the following file -->
@@ -26,17 +26,17 @@
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    Page Title
+    Pzl Edge Insights
 </asp:Content>
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
 
-    <div>
-        <p id="message">
-            <!-- The following content will be replaced with the user name when you run the app - see App.js -->
-            initializing...
-        </p>
+    <div style="width: 100%">
+        <div id="message" style="float: left; width: 50%">&nbsp;
+        </div>
+        <div id="log" style="float: left; width: 45%; height: 400px; border: solid 1px black; overflow:scroll">
+        </div>
     </div>
 
 </asp:Content>

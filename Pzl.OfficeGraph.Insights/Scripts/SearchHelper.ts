@@ -6,6 +6,8 @@
 module Pzl.OfficeGraph.Insight {
 
     export class SearchHelper {
+        backupActorAssociates : Actor[] = [];
+
         private postJson(payload, success, failure) {
             var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
             $.ajax({
@@ -87,35 +89,37 @@ module Pzl.OfficeGraph.Insight {
         loadCollabModifiedItemsForActor(actor: Actor): Q.IPromise<Item[]> {
             var deferred = Q.defer<Item[]>();
             if (actor.associates.length === 0) {
-                deferred.resolve([]);
-            } else {
-                var template = "actor(#ID#,action:" + Action.Modified + ")";
-                var parts = [];
-                for (var j = 0; j < actor.associates.length; j++) {
-                    parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
-                }
-
-                var fql = "and(actor(" + actor.id + ",action:" + Action.Modified + "),or(" + parts.join() + "))";
-
-                var searchPayload = this.getPayload("*", fql);
-
-                this.postJson(searchPayload, data => {
-                    var items: Item[] = [];
-                    if (data.PrimaryQueryResult != null) {
-                        var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
-                        for (var i = 0; i < resultsCount; i++) {
-                            var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
-                            var item = this.parseItemResults(row);
-                            items.push(item);
-                        }
-                    }
-                    deferred.resolve(items);
-                },
-                    error => {
-                        console.log(JSON.stringify(error));
-                        deferred.reject(JSON.stringify(error));
-                    });
+                // if no associates replace with backup actors
+                actor.associates = this.backupActorAssociates; 
             }
+            var template = "actor(#ID#,action:" + Action.Modified + ")";
+            var parts = [];
+            parts.push(template.replace("#ID#", actor.id.toString()));
+            for (var j = 0; j < actor.associates.length; j++) {
+                parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+            }
+
+            var fql = "and(actor(" + actor.id + ",action:" + Action.Modified + "),or(" + parts.join() + "))";
+
+            var searchPayload = this.getPayload("*", fql);
+
+            this.postJson(searchPayload, data => {
+                var items: Item[] = [];
+                if (data.PrimaryQueryResult != null) {
+                    var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
+                    for (var i = 0; i < resultsCount; i++) {
+                        var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
+                        var item = this.parseItemResults(row);
+                        items.push(item);
+                    }
+                }
+                deferred.resolve(items);
+            },
+                error => {
+                    console.log(JSON.stringify(error));
+                    deferred.reject(JSON.stringify(error));
+                });
+
             return deferred.promise;
         }
 
@@ -153,16 +157,20 @@ module Pzl.OfficeGraph.Insight {
                 return this.loadColleagues(me);
             }).then(actors => {
                 actor.associates = actors;
-                Q.all<any>([
-                    this.loadModifiedItemsForActor(actor).then(items => {
-                        actor.items = items;
-                    }),
-                    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                        actor.collabItems = items;
-                    })
-                ]).done(() => {
+                if (this.backupActorAssociates.length === 0 || actors.length > this.backupActorAssociates.length) {
+                    this.backupActorAssociates = actors;
+                }
+                this.loadCollabModifiedItemsForActor(actor).then(items => {
+                    actor.collabItems = items;
                     deferred.resolve(actor);
                 });
+                //Q.all<any>([
+                //    this.loadCollabModifiedItemsForActor(actor).then(items => {
+                //        actor.collabItems = items;
+                //    })
+                //]).done(() => {
+                //    deferred.resolve(actor);
+                //});
             });
 
             return deferred.promise;
@@ -179,9 +187,9 @@ module Pzl.OfficeGraph.Insight {
                     this.loadColleagues(actor).then(colleagues => {
                         actor.associates = colleagues;
                     }),
-                    this.loadModifiedItemsForActor(actor).then(items => {
-                        actor.items = items;
-                    }),
+                    //this.loadModifiedItemsForActor(actor).then(items => {
+                    //    actor.items = items;
+                    //}),
                     this.loadCollabModifiedItemsForActor(actor).then(items => {
                         actor.collabItems = items;
                     })
@@ -198,9 +206,10 @@ module Pzl.OfficeGraph.Insight {
                 "request": {
                     "Querytext": query,
                     "RowLimit": 500,
+                    "TrimDuplicates": false,
                     "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                     //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
-                    'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER','EditorOWSUSER','DocId','Edges'],
+                    'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'DocId', 'Edges'],
                     "ClientType": "PzlGraphInsight",
                     "Properties": [
                         {
@@ -293,7 +302,9 @@ module Pzl.OfficeGraph.Insight {
             var item = new Item();
             for (var i = 0; i < row.Cells.length; i++) {
                 var cell = row.Cells[i];
-                if (cell.Key === 'AuthorOWSUSER') {
+                if (cell.Key === 'Title') {
+                    item.title = cell.Value;
+                } else if (cell.Key === 'AuthorOWSUSER') {
                     item.createdBy = cell.Value;
                 } else if (cell.Key === 'EditorOWSUSER') {
                     item.lastModifiedBy = cell.Value;

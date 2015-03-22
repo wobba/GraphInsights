@@ -22,16 +22,23 @@ var Pzl;
                 Item.prototype.getNumberOfContributors = function () {
                     return this.rawEdges.length;
                 };
+                Item.prototype.getContributorActorIds = function () {
+                    var actorIds = [];
+                    for (var i = 0; i < this.rawEdges.length; i++) {
+                        actorIds.push(this.rawEdges[i].actorId);
+                    }
+                    return actorIds;
+                };
                 Item.prototype.actorIsCreator = function (actor) {
                     return this.createdBy.indexOf(actor.accountName) >= 0;
                 };
                 Item.prototype.actorIsLastModifed = function (actor) {
                     return this.lastModifiedBy.indexOf(actor.accountName) >= 0;
                 };
-                Item.prototype.getMinDateEdge = function () {
+                Item.prototype.getMinDateEdge = function (actorId) {
                     var date = new Date(2099, 12, 31);
                     for (var i = 0; i < this.rawEdges.length; i++) {
-                        if (this.rawEdges[i].time < date) {
+                        if (this.rawEdges[i].time < date && this.rawEdges[i].actorId === actorId) {
                             date = this.rawEdges[i].time;
                         }
                     }

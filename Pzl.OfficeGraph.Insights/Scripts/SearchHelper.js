@@ -10,6 +10,7 @@ var Pzl;
         (function (Insight) {
             var SearchHelper = (function () {
                 function SearchHelper() {
+                    this.backupActorAssociates = [];
                 }
                 SearchHelper.prototype.postJson = function (payload, success, failure) {
                     var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
@@ -63,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -85,32 +86,32 @@ var Pzl;
                     var _this = this;
                     var deferred = Q.defer();
                     if (actor.associates.length === 0) {
-                        deferred.resolve([]);
+                        // if no associates replace with backup actors
+                        actor.associates = this.backupActorAssociates;
                     }
-                    else {
-                        var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
-                        var parts = [];
-                        for (var j = 0; j < actor.associates.length; j++) {
-                            parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
-                        }
-                        var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
-                        var searchPayload = this.getPayload("*", fql);
-                        this.postJson(searchPayload, function (data) {
-                            var items = [];
-                            if (data.PrimaryQueryResult != null) {
-                                var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
-                                for (var i = 0; i < resultsCount; i++) {
-                                    var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
-                                    var item = _this.parseItemResults(row);
-                                    items.push(item);
-                                }
+                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
+                    var parts = [];
+                    parts.push(template.replace("#ID#", actor.id.toString()));
+                    for (var j = 0; j < actor.associates.length; j++) {
+                        parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+                    }
+                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
+                    var searchPayload = this.getPayload("*", fql);
+                    this.postJson(searchPayload, function (data) {
+                        var items = [];
+                        if (data.PrimaryQueryResult != null) {
+                            var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
+                            for (var i = 0; i < resultsCount; i++) {
+                                var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
+                                var item = _this.parseItemResults(row);
+                                items.push(item);
                             }
-                            deferred.resolve(items);
-                        }, function (error) {
-                            console.log(JSON.stringify(error));
-                            deferred.reject(JSON.stringify(error));
-                        });
-                    }
+                        }
+                        deferred.resolve(items);
+                    }, function (error) {
+                        console.log(JSON.stringify(error));
+                        deferred.reject(JSON.stringify(error));
+                    });
                     return deferred.promise;
                 };
                 SearchHelper.prototype.loadColleagues = function (actor) {
@@ -143,16 +144,20 @@ var Pzl;
                         return _this.loadColleagues(me);
                     }).then(function (actors) {
                         actor.associates = actors;
-                        Q.all([
-                            _this.loadModifiedItemsForActor(actor).then(function (items) {
-                                actor.items = items;
-                            }),
-                            _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
-                                actor.collabItems = items;
-                            })
-                        ]).done(function () {
+                        if (_this.backupActorAssociates.length === 0 || actors.length > _this.backupActorAssociates.length) {
+                            _this.backupActorAssociates = actors;
+                        }
+                        _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
+                            actor.collabItems = items;
                             deferred.resolve(actor);
                         });
+                        //Q.all<any>([
+                        //    this.loadCollabModifiedItemsForActor(actor).then(items => {
+                        //        actor.collabItems = items;
+                        //    })
+                        //]).done(() => {
+                        //    deferred.resolve(actor);
+                        //});
                     });
                     return deferred.promise;
                 };
@@ -165,9 +170,6 @@ var Pzl;
                         Q.all([
                             _this.loadColleagues(actor).then(function (colleagues) {
                                 actor.associates = colleagues;
-                            }),
-                            _this.loadModifiedItemsForActor(actor).then(function (items) {
-                                actor.items = items;
                             }),
                             _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
                                 actor.collabItems = items;
@@ -183,6 +185,7 @@ var Pzl;
                         "request": {
                             "Querytext": query,
                             "RowLimit": 500,
+                            "TrimDuplicates": false,
                             "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                             //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
                             'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'DocId', 'Edges'],
@@ -279,7 +282,10 @@ var Pzl;
                     var item = new Insight.Item();
                     for (var i = 0; i < row.Cells.length; i++) {
                         var cell = row.Cells[i];
-                        if (cell.Key === 'AuthorOWSUSER') {
+                        if (cell.Key === 'Title') {
+                            item.title = cell.Value;
+                        }
+                        else if (cell.Key === 'AuthorOWSUSER') {
                             item.createdBy = cell.Value;
                         }
                         else if (cell.Key === 'EditorOWSUSER') {

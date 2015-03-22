@@ -3,7 +3,8 @@
 
 module Pzl.OfficeGraph.Insight {
     export class Item {
-        id : number;
+        id: number;
+        title: string;
         createdBy: string;
         lastModifiedBy: string;
         createdDate: Date;
@@ -26,6 +27,14 @@ module Pzl.OfficeGraph.Insight {
             return this.rawEdges.length;
         }
 
+        getContributorActorIds(): number[] {
+            var actorIds = [];
+            for (var i = 0; i < this.rawEdges.length; i++) {
+                actorIds.push(this.rawEdges[i].actorId);
+            }
+            return actorIds;
+        }
+
         actorIsCreator(actor: Actor): boolean {
             return this.createdBy.indexOf(actor.accountName) >= 0;
         }
@@ -34,10 +43,10 @@ module Pzl.OfficeGraph.Insight {
             return this.lastModifiedBy.indexOf(actor.accountName) >= 0;
         }
 
-        getMinDateEdge(): Date {
+        getMinDateEdge(actorId : number): Date {
             var date = new Date(2099, 12, 31);
             for (var i = 0; i < this.rawEdges.length; i++) {
-                if (this.rawEdges[i].time < date) {
+                if (this.rawEdges[i].time < date && this.rawEdges[i].actorId === actorId) {
                     date = this.rawEdges[i].time;
                 }
             }
