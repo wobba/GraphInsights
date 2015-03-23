@@ -77,7 +77,7 @@ module Pzl.OfficeGraph.Insight {
         itemLifeSpanInDays(): number {
             var ms = moment(this.lastModifiedDate).diff(moment(this.createdDate));
             var d = moment.duration(ms);
-            return d.days();
+            return Math.round(d.asDays());
         }
     }
 

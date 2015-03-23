@@ -120,7 +120,7 @@ module Pzl.OfficeGraph.Insight {
         jQuery(document).ready(() => {
             SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor",() => {
                 var helper = new Insight.SearchHelper();
-                helper.loadAllOfMe().delay(500).done(me => {
+                helper.loadAllOfMe().delay(1000).done(me => {
                     $("#log").prepend("Processing edges for " + me.name);
                     console.log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
                     //console.log("\tNumber of modifications: " + me.getNumberOfModificationsByYou() + " per day: " + me.getModificationsPerDay());
@@ -129,7 +129,7 @@ module Pzl.OfficeGraph.Insight {
 
                     for (var i = 0; i < me.associates.length; i++) {
                         var c = me.associates[i];
-                        helper.populateActor(c).delay(500).done(c => {
+                        helper.populateActor(c).delay(500*i).done(c => {
                             if (c.collabItems.length === 0) return;
                             $("#log").prepend("Processing edges for " + c.name + "<br/>");
                             console.log(c.name + "(" + c.id + ")" + " has " + c.associates.length + " associates and " + c.collabItems.length + " items");

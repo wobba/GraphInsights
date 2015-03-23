@@ -64,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -89,13 +89,13 @@ var Pzl;
                         // if no associates replace with backup actors
                         actor.associates = this.backupActorAssociates;
                     }
-                    var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
+                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
                     var parts = [];
                     parts.push(template.replace("#ID#", actor.id.toString()));
                     for (var j = 0; j < actor.associates.length; j++) {
                         parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
                     }
-                    var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
+                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
                     this.postJson(searchPayload, function (data) {
                         var items = [];
@@ -142,10 +142,10 @@ var Pzl;
                     this.loadMe().then(function (me) {
                         actor = me;
                         return _this.loadColleagues(me);
-                    }).then(function (actors) {
-                        actor.associates = actors;
-                        if (_this.backupActorAssociates.length === 0 || actors.length > _this.backupActorAssociates.length) {
-                            _this.backupActorAssociates = actors;
+                    }).then(function (colleagues) {
+                        actor.associates = colleagues;
+                        if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
+                            _this.backupActorAssociates = colleagues;
                         }
                         _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
                             actor.collabItems = items;
@@ -166,17 +166,25 @@ var Pzl;
                     var deferred = Q.defer();
                     this.loadColleagues(actor).then(function (colleagues) {
                         actor.associates = colleagues;
-                    }).then(function () {
-                        Q.all([
-                            _this.loadColleagues(actor).then(function (colleagues) {
-                                actor.associates = colleagues;
-                            }),
-                            _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
-                                actor.collabItems = items;
-                            })
-                        ]).done(function () {
+                        if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
+                            _this.backupActorAssociates = colleagues;
+                        }
+                        _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
+                            actor.collabItems = items;
                             deferred.resolve(actor);
                         });
+                        //Q.all<any>([
+                        //    //this.loadColleagues(actor).then(colleagues => {
+                        //    //    actor.associates = colleagues;
+                        //    //}),
+                        //    //this.loadModifiedItemsForActor(actor).then(items => {
+                        //    //    actor.items = items;
+                        //    //}),
+                        //    this.loadCollabModifiedItemsForActor(actor).then(items => {
+                        //        actor.collabItems = items;
+                        //        deferred.resolve(actor);
+                        //    })
+                        //]);
                     });
                     return deferred.promise;
                 };
@@ -187,7 +195,6 @@ var Pzl;
                             "RowLimit": 500,
                             "TrimDuplicates": false,
                             "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
-                            //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
                             'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'ModifiedBy', 'DocId', 'Edges'],
                             "ClientType": "PzlGraphInsight",
                             "Properties": [
@@ -295,21 +302,6 @@ var Pzl;
                         edges.push(edge);
                     }
                     return edges;
-                    //for (var i = 0; i < row.Cells.length; i++) {
-                    //    var cell = row.Cells[i];
-                    //    if (cell.Key === 'Edges') {
-                    //        //get the highest edge weight
-                    //        var edges = JSON.parse(cell.Value);
-                    //        // TODO: combine edges - store all actors/weights/times
-                    //        edge.actorId = edges[0].ActorId;
-                    //        edge.objectId = edges[0].ObjectId;
-                    //        var actionString = <string>edges[0].Properties.Action;
-                    //        edge.action = Action[actionString];
-                    //        edge.weight = parseInt(edges[0].Properties.Weight);
-                    //        edge.time = moment(edges[0].Properties.Time).toDate();
-                    //    }
-                    //}
-                    //return edge;
                 };
                 return SearchHelper;
             })();

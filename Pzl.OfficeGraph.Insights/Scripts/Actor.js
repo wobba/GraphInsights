@@ -14,7 +14,7 @@ var Pzl;
                 Actor.prototype.getItemModificationsAverage = function () {
                     var count = 0;
                     for (var i = 0; i < this.collabItems.length; i++) {
-                        count = count + this.collabItems[i].getNumberOfEditsByActor(this, Insight.Inclusion.ActorOnly);
+                        count = count + this.collabItems[i].getNumberOfEditsByActor(this, 0 /* ActorOnly */);
                     }
                     return Math.round(count / this.collabItems.length);
                 };

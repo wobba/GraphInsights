@@ -26,12 +26,13 @@
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    Pzl Edge Insights aka Co-author Monitor
+    Pzl Edge Insights aka Co-Auth Monitor
 </asp:Content>
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
-
+    <h2>All stats presented in this App revolves around how people work together on documents, seen from <b>your</b> point of view. If there are clusters of documents you don't have access to they will not show up. Go poke an eye!</h2>
+    <hr/>
     <div style="width: 100%">
         <div id="message" style="float: left; width: 50%">
         </div>

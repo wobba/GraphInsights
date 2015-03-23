@@ -87,14 +87,14 @@ var Pzl;
                 jQuery(document).ready(function () {
                     SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor", function () {
                         var helper = new Insight.SearchHelper();
-                        helper.loadAllOfMe().delay(500).done(function (me) {
+                        helper.loadAllOfMe().delay(1000).done(function (me) {
                             $("#log").prepend("Processing edges for " + me.name);
                             console.log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
                             //console.log("\tNumber of modifications: " + me.getNumberOfModificationsByYou() + " per day: " + me.getModificationsPerDay());
                             updateStats(me);
                             for (var i = 0; i < me.associates.length; i++) {
                                 var c = me.associates[i];
-                                helper.populateActor(c).delay(500).done(function (c) {
+                                helper.populateActor(c).delay(500 * i).done(function (c) {
                                     if (c.collabItems.length === 0)
                                         return;
                                     $("#log").prepend("Processing edges for " + c.name + "<br/>");

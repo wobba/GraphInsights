@@ -6,7 +6,7 @@
 module Pzl.OfficeGraph.Insight {
 
     export class SearchHelper {
-        backupActorAssociates : Actor[] = [];
+        backupActorAssociates: Actor[] = [];
 
         private postJson(payload, success, failure) {
             var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
@@ -90,7 +90,7 @@ module Pzl.OfficeGraph.Insight {
             var deferred = Q.defer<Item[]>();
             if (actor.associates.length === 0) {
                 // if no associates replace with backup actors
-                actor.associates = this.backupActorAssociates; 
+                actor.associates = this.backupActorAssociates;
             }
             var template = "actor(#ID#,action:" + Action.Modified + ")";
             var parts = [];
@@ -155,10 +155,10 @@ module Pzl.OfficeGraph.Insight {
                 .then(me => {
                 actor = me;
                 return this.loadColleagues(me);
-            }).then(actors => {
-                actor.associates = actors;
-                if (this.backupActorAssociates.length === 0 || actors.length > this.backupActorAssociates.length) {
-                    this.backupActorAssociates = actors;
+            }).then(colleagues => {
+                actor.associates = colleagues;
+                if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
+                    this.backupActorAssociates = colleagues;
                 }
                 this.loadCollabModifiedItemsForActor(actor).then(items => {
                     actor.collabItems = items;
@@ -179,23 +179,28 @@ module Pzl.OfficeGraph.Insight {
         populateActor(actor: Actor): Q.Promise<Actor> {
             var deferred = Q.defer<Actor>();
 
-            this.loadColleagues(actor).
-                then(colleagues => {
+            this.loadColleagues(actor)
+                .then(colleagues => {
                 actor.associates = colleagues;
-            }).then(() => {
-                Q.all<any>([
-                    this.loadColleagues(actor).then(colleagues => {
-                        actor.associates = colleagues;
-                    }),
-                    //this.loadModifiedItemsForActor(actor).then(items => {
-                    //    actor.items = items;
-                    //}),
-                    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                        actor.collabItems = items;
-                    })
-                ]).done(() => {
+                if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
+                    this.backupActorAssociates = colleagues;
+                }
+                this.loadCollabModifiedItemsForActor(actor).then(items => {
+                    actor.collabItems = items;
                     deferred.resolve(actor);
                 });
+                //Q.all<any>([
+                //    //this.loadColleagues(actor).then(colleagues => {
+                //    //    actor.associates = colleagues;
+                //    //}),
+                //    //this.loadModifiedItemsForActor(actor).then(items => {
+                //    //    actor.items = items;
+                //    //}),
+                //    this.loadCollabModifiedItemsForActor(actor).then(items => {
+                //        actor.collabItems = items;
+                //        deferred.resolve(actor);
+                //    })
+                //]);
             });
 
             return deferred.promise;
@@ -208,7 +213,6 @@ module Pzl.OfficeGraph.Insight {
                     "RowLimit": 500,
                     "TrimDuplicates": false,
                     "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
-                    //title,write,path,created,AuthorOWSUSER,EditorOWSUSER
                     'SelectProperties': ['Title', 'Write', 'Path', 'Created', 'AuthorOWSUSER', 'EditorOWSUSER', 'ModifiedBy', 'DocId', 'Edges'],
                     "ClientType": "PzlGraphInsight",
                     "Properties": [
@@ -308,22 +312,6 @@ module Pzl.OfficeGraph.Insight {
                 edges.push(edge);
             }
             return edges;
-
-            //for (var i = 0; i < row.Cells.length; i++) {
-            //    var cell = row.Cells[i];
-            //    if (cell.Key === 'Edges') {
-            //        //get the highest edge weight
-            //        var edges = JSON.parse(cell.Value);
-            //        // TODO: combine edges - store all actors/weights/times
-            //        edge.actorId = edges[0].ActorId;
-            //        edge.objectId = edges[0].ObjectId;
-            //        var actionString = <string>edges[0].Properties.Action;
-            //        edge.action = Action[actionString];
-            //        edge.weight = parseInt(edges[0].Properties.Weight);
-            //        edge.time = moment(edges[0].Properties.Time).toDate();
-            //    }
-            //}
-            //return edge;
         }
     }
 }
