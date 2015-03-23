@@ -21,8 +21,10 @@ module Pzl.OfficeGraph.Insight {
         maxCreatorActor,
         maxModifier = 0,
         maxModifierActor,
-        longestItem : Item,
-        zeroCollaborators : string[] = [];
+        maxSaverPerItem = 0,
+        maxSaverPerItemActor,
+        longestItem: Item,
+        zeroCollaborators: string[] = [];
     //maxEditsPerDay = 0,
     //maxEditsPerDayActor;
 
@@ -77,6 +79,12 @@ module Pzl.OfficeGraph.Insight {
                 maxModifierActor = actor;
             }
 
+            var thisMaxSaverPerItem = actor.getHighestItemSaveCount();
+            if (thisMaxSaverPerItem > maxSaverPerItem) {
+                maxSaverPerItem = thisMaxSaverPerItem;
+                maxSaverPerItemActor = actor;
+            }
+
             jQuery("#message").empty();
             jQuery("#message").append("<p>Most active collaborator is <b>" + mostCollabItemsActor.name + "</b> co-authoring on <b>" + mostCollabItems + "</b> items");
 
@@ -91,7 +99,9 @@ module Pzl.OfficeGraph.Insight {
 
             jQuery("#message").append("<p><b>" + maxEditsPerItemAverageActor.name + "</b> is the most frequent saver with an average of <b>" + maxEditsPerItemAverage + "</b> saves per item ");
 
-            jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> can't let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+            jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+
+            jQuery("#message").append("If you're afraid to lose your work, talk to <b>" + maxSaverPerItemActor.name + "</b> who saved a single item a total of <b>" + maxSaverPerItem + "(!)</b> times");
 
             jQuery("#message").append("<p>#1 item starter is <b>" + maxCreatorActor.name + "</b> igniting a whopping <b>" + maxCreator + "</b> items");
 

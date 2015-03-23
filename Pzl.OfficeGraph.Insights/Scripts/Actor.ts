@@ -141,6 +141,21 @@ module Pzl.OfficeGraph.Insight {
             return saverCount;
         }
 
+        // Get item you have most saves for
+        getHighestItemSaveCount(): number {
+            var count = 0;
+            if (this.collabItems) {
+                for (var i = 0; i < this.collabItems.length; i++) {
+                    var item = this.collabItems[i];
+                    var itemCount = item.getMaxSaveCountforActor(this);
+                    if (itemCount > count) {
+                        count = itemCount;
+                    }
+                }
+            }
+            return count;
+        }
+
         //private getMinEdgeDate() {
         //    var date = new Date(2099, 12, 31);
         //    for (var i = 0; i < this.collabItems.length; i++) {

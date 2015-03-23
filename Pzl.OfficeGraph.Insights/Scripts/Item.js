@@ -35,6 +35,15 @@ var Pzl;
                 Item.prototype.actorIsLastModifed = function (actor) {
                     return this.lastModifiedByAccount.indexOf(actor.accountName) >= 0;
                 };
+                Item.prototype.getMaxSaveCountforActor = function (actor) {
+                    for (var i = 0; i < this.rawEdges.length; i++) {
+                        var edge = this.rawEdges[i];
+                        if (edge.actorId === actor.id) {
+                            return edge.weight;
+                        }
+                    }
+                    return 0;
+                };
                 Item.prototype.getMinDateEdge = function (actorId) {
                     var date = new Date(2099, 12, 31);
                     for (var i = 0; i < this.rawEdges.length; i++) {

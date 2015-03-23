@@ -130,6 +130,20 @@ var Pzl;
                     }
                     return saverCount;
                 };
+                // Get item you have most saves for
+                Actor.prototype.getHighestItemSaveCount = function () {
+                    var count = 0;
+                    if (this.collabItems) {
+                        for (var i = 0; i < this.collabItems.length; i++) {
+                            var item = this.collabItems[i];
+                            var itemCount = item.getMaxSaveCountforActor(this);
+                            if (itemCount > count) {
+                                count = itemCount;
+                            }
+                        }
+                    }
+                    return count;
+                };
                 return Actor;
             })();
             Insight.Actor = Actor;

@@ -12,7 +12,7 @@ module Pzl.OfficeGraph.Insight {
         lastModifiedDate: Date;
         rawEdges: Edge[];
 
-        getNumberOfEditsByActor(actor: Actor, mode : Inclusion): number {
+        getNumberOfEditsByActor(actor: Actor, mode: Inclusion): number {
             var edits = 0;
             for (var i = 0; i < this.rawEdges.length; i++) {
                 var edge = this.rawEdges[i];
@@ -44,7 +44,17 @@ module Pzl.OfficeGraph.Insight {
             return this.lastModifiedByAccount.indexOf(actor.accountName) >= 0;
         }
 
-        getMinDateEdge(actorId : number): Date {
+        getMaxSaveCountforActor(actor: Actor): number {
+            for (var i = 0; i < this.rawEdges.length; i++) {
+                var edge = this.rawEdges[i];
+                if (edge.actorId === actor.id) {
+                    return edge.weight;
+                }
+            }
+            return 0;
+        }
+
+        getMinDateEdge(actorId: number): Date {
             var date = new Date(2099, 12, 31);
             for (var i = 0; i < this.rawEdges.length; i++) {
                 if (this.rawEdges[i].time < date && this.rawEdges[i].actorId === actorId) {
@@ -64,7 +74,7 @@ module Pzl.OfficeGraph.Insight {
             return date;
         }
 
-        itemLifeSpanInDays() : number {
+        itemLifeSpanInDays(): number {
             var ms = moment(this.lastModifiedDate).diff(moment(this.createdDate));
             var d = moment.duration(ms);
             return d.days();

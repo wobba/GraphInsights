@@ -9,7 +9,7 @@ var Pzl;
     (function (OfficeGraph) {
         var Insight;
         (function (Insight) {
-            var mostCollabItems = 0, mostCollabItemsActor, minCollabItems = 200000, minCollabItemsActor, maxCollaborators = 0, maxCollaboratorsActor, maxEditsPerItemAverage = 0, maxEditsPerItemAverageActor, maxEgo = 0, maxEgoActor, maxCreator = 0, maxCreatorActor, maxModifier = 0, maxModifierActor, longestItem, zeroCollaborators = [];
+            var mostCollabItems = 0, mostCollabItemsActor, minCollabItems = 200000, minCollabItemsActor, maxCollaborators = 0, maxCollaboratorsActor, maxEditsPerItemAverage = 0, maxEditsPerItemAverageActor, maxEgo = 0, maxEgoActor, maxCreator = 0, maxCreatorActor, maxModifier = 0, maxModifierActor, maxSaverPerItem = 0, maxSaverPerItemActor, longestItem, zeroCollaborators = [];
             //maxEditsPerDay = 0,
             //maxEditsPerDayActor;
             function updateStats(actor) {
@@ -55,6 +55,11 @@ var Pzl;
                         maxModifier = thismaxModifier;
                         maxModifierActor = actor;
                     }
+                    var thisMaxSaverPerItem = actor.getHighestItemSaveCount();
+                    if (thisMaxSaverPerItem > maxSaverPerItem) {
+                        maxSaverPerItem = thisMaxSaverPerItem;
+                        maxSaverPerItemActor = actor;
+                    }
                     jQuery("#message").empty();
                     jQuery("#message").append("<p>Most active collaborator is <b>" + mostCollabItemsActor.name + "</b> co-authoring on <b>" + mostCollabItems + "</b> items");
                     if (zeroCollaborators.length > 0) {
@@ -66,7 +71,8 @@ var Pzl;
                     jQuery("#message").append("<p>Most social collaborator is <b>" + maxCollaboratorsActor.name + "</b> with a reach of <b>" + maxCollaborators + "</b> colleagues");
                     jQuery("#message").append("<p>Most active ego content producer is <b>" + maxEgoActor.name + "</b> with <b>" + maxEgo + "</b> items produced all alone (vs. " + maxEgoActor.getCollaborationItemCount() + " collab)");
                     jQuery("#message").append("<p><b>" + maxEditsPerItemAverageActor.name + "</b> is the most frequent saver with an average of <b>" + maxEditsPerItemAverage + "</b> saves per item ");
-                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> can't let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+                    jQuery("#message").append("If you're afraid to lose your work, talk to <b>" + maxSaverPerItemActor.name + "</b> who saved a single item a total of <b>" + maxSaverPerItem + "(!)</b> times");
                     jQuery("#message").append("<p>#1 item starter is <b>" + maxCreatorActor.name + "</b> igniting a whopping <b>" + maxCreator + "</b> items");
                     jQuery("#message").append("<p>Last dude on the ball <b>" + maxModifier + "</b> times was <b>" + maxModifierActor.name + "</b>");
                 }
