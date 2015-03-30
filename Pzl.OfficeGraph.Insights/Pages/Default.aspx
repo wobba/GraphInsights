@@ -72,7 +72,9 @@
         Colleague reach #
         <input id="colleagueReach" type="text" value="30" />
         <input type="button" onclick=" Pzl.OfficeGraph.Insight.initializePage(jQuery('#colleagueReach').val()); return false; " value="Kick it!" />
-        Filter <input id="slider1" type="range" min="0" max="10" step="1" value="0" onchange="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" onmousemove="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" /> 
+        Filter <span>0</span><input id="filterSlider" type="range" min="0" max="1" step="1" value="0" onchange="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" onmousemove="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" list="steplist" /><span id="maxValue">1</span>
+        <datalist id="steplist"/>
+        
         <%--<input type="button" onclick="Pzl.OfficeGraph.Insight.hideSingleCollab(1); return false; " value="Remove single item collaborators" />--%>
     </div>
 

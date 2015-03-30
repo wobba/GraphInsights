@@ -13,6 +13,7 @@ var Pzl;
                 var MyGraph = (function () {
                     function MyGraph(domId) {
                         var _this = this;
+                        this.maxCountB = 1;
                         var findNodeIndex = function (id) {
                             for (var i = 0; i < _this.nodes.length; i++) {
                                 if (_this.nodes[i].id == id) {
@@ -99,6 +100,9 @@ var Pzl;
                             _this.nodes.splice(0, _this.links.length);
                             update();
                         };
+                        this.maxCount = function () {
+                            return this.maxCountB;
+                        };
                         this.addLink = function (source, target, value) {
                             if (source > target) {
                                 // sort names
@@ -115,6 +119,9 @@ var Pzl;
                                     // existing link - shorten to show closeness
                                     if (_this.links[i].value > 20) {
                                         _this.links[i].value = _this.links[i].value / 2;
+                                    }
+                                    if (_this.links[i].count > _this.maxCountB) {
+                                        _this.maxCountB = _this.links[i].count;
                                     }
                                     value = _this.links[i].value;
                                     break;
@@ -160,21 +167,21 @@ var Pzl;
                                 //    .attr("cy", function (d) { return d.y = Math.max(r, Math.min(w - r, d.y)); });
                                 node.attr("transform", function (d) {
                                     // keep nodes inside canvas - code by mikael
-                                    var move = 50;
-                                    if (d.x < 0) {
-                                        d.x = move;
-                                    }
-                                    if (d.x > w) {
-                                        d.x = w - move; // to keep labels visible
-                                    }
-                                    if (d.y < 0) {
-                                        d.y = move;
-                                        d.x = d.x + move;
-                                    }
-                                    if (d.y > h) {
-                                        d.y = h - move;
-                                        d.x = d.x - move;
-                                    }
+                                    //var move = 50;
+                                    //if (d.x < 0) {
+                                    //    d.x = move;
+                                    //}
+                                    //if (d.x > w) {
+                                    //    d.x = w - move; // to keep labels visible
+                                    //}
+                                    //if (d.y < 0) {
+                                    //    d.y = move;
+                                    //    d.x = d.x + move;
+                                    //}
+                                    //if (d.y > h) {
+                                    //    d.y = h - move;
+                                    //    d.x = d.x - move;
+                                    //}
                                     return "translate(" + d.x + "," + d.y + ")";
                                 });
                             });

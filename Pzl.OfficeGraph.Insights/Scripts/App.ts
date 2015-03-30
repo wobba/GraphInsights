@@ -126,6 +126,20 @@ module Pzl.OfficeGraph.Insight {
                 jQuery("#message").append("<p>Last dude on the ball <b>" + maxModifier + "</b> times was <b>" + maxModifierActor.name + "</b>");
             }
 
+            var max = graphCanvas.maxCount();
+            var slider = jQuery("#filterSlider");
+            var data = jQuery("#steplist");
+            var options = jQuery("#steplist option");
+            if (options.size() < max) {
+                jQuery("#maxValue").text(max);
+                slider.attr("max", max);
+                jQuery("#log").prepend(max + "<br/>");
+                options.remove();
+                for (var i = 0; i < max; i++) {
+                    data.append(jQuery('<option></option>').html(i.toString()));
+                }
+            }
+
         } catch (e) {
             //alert(e);
             jQuery("#log").prepend(e);
