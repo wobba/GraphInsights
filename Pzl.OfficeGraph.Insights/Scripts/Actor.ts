@@ -156,6 +156,18 @@ module Pzl.OfficeGraph.Insight {
             return count;
         }
 
+        getAssociateNameById(actorId: number): string {
+            if (actorId === this.id) {
+                return this.name;
+            }
+            for (var i = 0; i < this.associates.length; i++) {
+                if (this.associates[i].id === actorId) {
+                    return this.associates[i].name;
+                }
+            }
+            return actorId.toString();
+        }
+
         //private getMinEdgeDate() {
         //    var date = new Date(2099, 12, 31);
         //    for (var i = 0; i < this.collabItems.length; i++) {
@@ -180,6 +192,7 @@ module Pzl.OfficeGraph.Insight {
     }
 
     export class Edge {
+        workid: number;
         actorId: number;
         objectId: number;
         action: Action;

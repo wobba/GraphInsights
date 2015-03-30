@@ -34,5 +34,8 @@
     <ProjectItemFile Source="Item.ts" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="Item.js" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="Item.js.map" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="ForceGraph.ts" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="ForceGraph.js" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="ForceGraph.js.map" Target="Scripts\" Type="ElementFile" />
   </Files>
 </ProjectItem>

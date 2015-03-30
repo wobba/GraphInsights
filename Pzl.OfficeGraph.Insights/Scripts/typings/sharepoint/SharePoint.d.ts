@@ -9458,6 +9458,7 @@ declare class SPClientPeoplePicker {
 
     static SPClientPeoplePickerDict: {
         [pickerIelementId: string]: SPClientPeoplePicker;
+        peoplePickerDiv_TopSpan: any;
     };
 
     static InitializeStandalonePeoplePicker(clientId: string, value: ISPClientPeoplePickerEntity[], schema: ISPClientPeoplePickerSchema): void;

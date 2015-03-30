@@ -144,6 +144,17 @@ var Pzl;
                     }
                     return count;
                 };
+                Actor.prototype.getAssociateNameById = function (actorId) {
+                    if (actorId === this.id) {
+                        return this.name;
+                    }
+                    for (var i = 0; i < this.associates.length; i++) {
+                        if (this.associates[i].id === actorId) {
+                            return this.associates[i].name;
+                        }
+                    }
+                    return actorId.toString();
+                };
                 return Actor;
             })();
             Insight.Actor = Actor;

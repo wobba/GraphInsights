@@ -33,5 +33,8 @@
     <File Path="Scripts\Item.ts" Url="Scripts/Item.ts" ReplaceContent="TRUE" />
     <File Path="Scripts\Item.js" Url="Scripts/Item.js" ReplaceContent="TRUE" />
     <File Path="Scripts\Item.js.map" Url="Scripts/Item.js.map" ReplaceContent="TRUE" />
+    <File Path="Scripts\ForceGraph.ts" Url="Scripts/ForceGraph.ts" ReplaceContent="TRUE" />
+    <File Path="Scripts\ForceGraph.js" Url="Scripts/ForceGraph.js" ReplaceContent="TRUE" />
+    <File Path="Scripts\ForceGraph.js.map" Url="Scripts/ForceGraph.js.map" ReplaceContent="TRUE" />
   </Module>
 </Elements>

@@ -90,6 +90,7 @@ module Pzl.OfficeGraph.Insight {
             var deferred = Q.defer<Item[]>();
             if (actor.associates.length === 0) {
                 // if no associates replace with backup actors
+                console.log("Using backup associates");
                 actor.associates = this.backupActorAssociates;
             }
             var template = "actor(#ID#,action:" + Action.Modified + ")";
@@ -97,6 +98,9 @@ module Pzl.OfficeGraph.Insight {
             parts.push(template.replace("#ID#", actor.id.toString()));
             for (var j = 0; j < actor.associates.length; j++) {
                 parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+            }
+            if (parts.length === 1) {
+                parts.push(parts[0]); // fix to not fail or query
             }
 
             var fql = "and(actor(" + actor.id + ",action:" + Action.Modified + "),or(" + parts.join() + "))";
@@ -123,10 +127,10 @@ module Pzl.OfficeGraph.Insight {
             return deferred.promise;
         }
 
-        loadColleagues(actor: Actor): Q.IPromise<Actor[]> {
+        loadColleagues(actor: Actor, reach: number): Q.IPromise<Actor[]> {
             var deferred = Q.defer<Actor[]>();
 
-            var searchPayload = this.getPayloadActor("*", "ACTOR(" + actor.id + ", or(action:1013,action:1014,action:1015,action:1016,action:1019,action:1033,action:1035,action:1041))");
+            var searchPayload = this.getPayloadActor(reach, "*", "ACTOR(" + actor.id + ", or(action:1013,action:1014,action:1015,action:1016,action:1019,action:1033,action:1035,action:1041))");
 
             this.postJson(searchPayload, data => {
                 var actors: Actor[] = [];
@@ -147,14 +151,14 @@ module Pzl.OfficeGraph.Insight {
             return deferred.promise;
         }
 
-        loadAllOfMe(): Q.Promise<Actor> {
+        loadAllOfMe(reach: number): Q.Promise<Actor> {
             var deferred = Q.defer<Actor>();
             var actor: Actor;
 
             this.loadMe()
                 .then(me => {
                 actor = me;
-                return this.loadColleagues(me);
+                return this.loadColleagues(me, reach);
             }).then(colleagues => {
                 actor.associates = colleagues;
                 if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
@@ -176,10 +180,10 @@ module Pzl.OfficeGraph.Insight {
             return deferred.promise;
         }
 
-        populateActor(actor: Actor): Q.Promise<Actor> {
+        populateActor(actor: Actor, reach: number): Q.Promise<Actor> {
             var deferred = Q.defer<Actor>();
 
-            this.loadColleagues(actor)
+            this.loadColleagues(actor, reach)
                 .then(colleagues => {
                 actor.associates = colleagues;
                 if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
@@ -231,11 +235,12 @@ module Pzl.OfficeGraph.Insight {
             };
         }
 
-        private getPayloadActor(query: string, graphQuery: string) {
+        private getPayloadActor(rowLimit: number, query: string, graphQuery: string) {
+            //action:1033,weight:1,edgeFunc:weight,mergeFunc:max
             return {
                 "request": {
                     "Querytext": query,
-                    "RowLimit": 500,
+                    "RowLimit": rowLimit,
                     "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                     'SelectProperties': ['AccountName', 'PreferredName', 'PictureURL'],
                     "ClientType": "PzlGraphInsight",
@@ -247,7 +252,8 @@ module Pzl.OfficeGraph.Insight {
                         {
                             "Name": "GraphRankingModel",
                             "Value": {
-                                "StrVal": "{\"features\":[{\"function\":\"EdgeTime\"}]}",
+                                //"StrVal": "{\"features\":[{\"function\":\"EdgeWeight\"}]}",
+                                "StrVal": "{\"features\":[{\"action\":\"1033\",\"function\":\"EdgeWeight\"},{\"action\":\"1019\",\"function\":\"EdgeWeight\"}]}",
                                 "QueryPropertyValueTypeIndex": 1
                             }
                         }]
@@ -296,6 +302,11 @@ module Pzl.OfficeGraph.Insight {
                     item.rawEdges = this.parseEdgeResults(edges);
                 }
             }
+
+            for (var j = 0; j < item.rawEdges.length; j++) {
+                item.rawEdges[j].workid = item.id;
+            }
+
             return item;
         }
 

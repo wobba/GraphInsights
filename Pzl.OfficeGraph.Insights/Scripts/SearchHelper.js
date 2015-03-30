@@ -87,6 +87,7 @@ var Pzl;
                     var deferred = Q.defer();
                     if (actor.associates.length === 0) {
                         // if no associates replace with backup actors
+                        console.log("Using backup associates");
                         actor.associates = this.backupActorAssociates;
                     }
                     var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
@@ -94,6 +95,9 @@ var Pzl;
                     parts.push(template.replace("#ID#", actor.id.toString()));
                     for (var j = 0; j < actor.associates.length; j++) {
                         parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+                    }
+                    if (parts.length === 1) {
+                        parts.push(parts[0]); // fix to not fail or query
                     }
                     var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
@@ -114,10 +118,10 @@ var Pzl;
                     });
                     return deferred.promise;
                 };
-                SearchHelper.prototype.loadColleagues = function (actor) {
+                SearchHelper.prototype.loadColleagues = function (actor, reach) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayloadActor("*", "ACTOR(" + actor.id + ", or(action:1013,action:1014,action:1015,action:1016,action:1019,action:1033,action:1035,action:1041))");
+                    var searchPayload = this.getPayloadActor(reach, "*", "ACTOR(" + actor.id + ", or(action:1013,action:1014,action:1015,action:1016,action:1019,action:1033,action:1035,action:1041))");
                     this.postJson(searchPayload, function (data) {
                         var actors = [];
                         if (data.PrimaryQueryResult != null) {
@@ -135,13 +139,13 @@ var Pzl;
                     });
                     return deferred.promise;
                 };
-                SearchHelper.prototype.loadAllOfMe = function () {
+                SearchHelper.prototype.loadAllOfMe = function (reach) {
                     var _this = this;
                     var deferred = Q.defer();
                     var actor;
                     this.loadMe().then(function (me) {
                         actor = me;
-                        return _this.loadColleagues(me);
+                        return _this.loadColleagues(me, reach);
                     }).then(function (colleagues) {
                         actor.associates = colleagues;
                         if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
@@ -161,10 +165,10 @@ var Pzl;
                     });
                     return deferred.promise;
                 };
-                SearchHelper.prototype.populateActor = function (actor) {
+                SearchHelper.prototype.populateActor = function (actor, reach) {
                     var _this = this;
                     var deferred = Q.defer();
-                    this.loadColleagues(actor).then(function (colleagues) {
+                    this.loadColleagues(actor, reach).then(function (colleagues) {
                         actor.associates = colleagues;
                         if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
                             _this.backupActorAssociates = colleagues;
@@ -213,11 +217,12 @@ var Pzl;
                         }
                     };
                 };
-                SearchHelper.prototype.getPayloadActor = function (query, graphQuery) {
+                SearchHelper.prototype.getPayloadActor = function (rowLimit, query, graphQuery) {
+                    //action:1033,weight:1,edgeFunc:weight,mergeFunc:max
                     return {
                         "request": {
                             "Querytext": query,
-                            "RowLimit": 500,
+                            "RowLimit": rowLimit,
                             "RankingModelId": "0c77ded8-c3ef-466d-929d-905670ea1d72",
                             'SelectProperties': ['AccountName', 'PreferredName', 'PictureURL'],
                             "ClientType": "PzlGraphInsight",
@@ -229,7 +234,8 @@ var Pzl;
                                 {
                                     "Name": "GraphRankingModel",
                                     "Value": {
-                                        "StrVal": "{\"features\":[{\"function\":\"EdgeTime\"}]}",
+                                        //"StrVal": "{\"features\":[{\"function\":\"EdgeWeight\"}]}",
+                                        "StrVal": "{\"features\":[{\"action\":\"1033\",\"function\":\"EdgeWeight\"},{\"action\":\"1019\",\"function\":\"EdgeWeight\"}]}",
                                         "QueryPropertyValueTypeIndex": 1
                                     }
                                 }
@@ -286,6 +292,9 @@ var Pzl;
                             var edges = JSON.parse(cell.Value);
                             item.rawEdges = this.parseEdgeResults(edges);
                         }
+                    }
+                    for (var j = 0; j < item.rawEdges.length; j++) {
+                        item.rawEdges[j].workid = item.id;
                     }
                     return item;
                 };

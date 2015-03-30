@@ -1262,6 +1262,7 @@ declare module D3 {
         }
 
         export interface GraphNodeForce {
+            id?:number;
             index?: number;
             x?: number;
             y?: number;
@@ -1274,6 +1275,7 @@ declare module D3 {
         export interface GraphLinkForce {
             source: GraphNodeForce;
             target: GraphNodeForce;
+            value: any;
         }
 
         export interface ForceLayout {
