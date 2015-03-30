@@ -34,16 +34,18 @@ var Pzl;
                             return count === 0;
                         };
                         this.showFilterByCount = function (hideCount) {
+                            var animDuration = 250;
                             for (var i = this.links.length - 1; i >= 0; i--) {
                                 var link = this.links[i];
-                                //TODO: make logic work
                                 console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                                 if (link.count <= hideCount) {
-                                    d3.selectAll(id).style("opacity", 0); // hide links
+                                    //d3.selectAll(id).style("opacity", 0); // hide links
+                                    d3.selectAll(id).transition().duration(animDuration).style("opacity", 0);
                                 }
                                 else {
-                                    d3.selectAll(id).style("opacity", 1); // show
+                                    //d3.selectAll(id).style("opacity", 1); // show
+                                    d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
                                 }
                             }
                             for (var j = 0; j < this.nodes.length; j++) {
@@ -51,12 +53,16 @@ var Pzl;
                                 var selectorNode = "#Node" + this.validCssName(node.id);
                                 var selectorText = "#NodeText" + this.validCssName(node.id);
                                 if (this.isSingleNode(node.id, hideCount)) {
-                                    d3.selectAll(selectorNode).style("opacity", 0); // hide links
-                                    d3.selectAll(selectorText).style("opacity", 0); // hide label
+                                    //d3.selectAll(selectorNode).style("opacity", 0); // hide links
+                                    //d3.selectAll(selectorText).style("opacity", 0); // hide label
+                                    d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
+                                    d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
                                 }
                                 else {
-                                    d3.selectAll(selectorNode).style("opacity", 1); // show label
-                                    d3.selectAll(selectorText).style("opacity", 1); // show label
+                                    //d3.selectAll(selectorNode).style("opacity", 1); // show label
+                                    //d3.selectAll(selectorText).style("opacity", 1); // show label
+                                    d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
+                                    d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
                                 }
                             }
                             update();
@@ -151,15 +157,17 @@ var Pzl;
                         var force = d3.layout.force();
                         this.nodes = force.nodes();
                         this.links = force.links();
+                        var fadeinTime = 500;
                         var update = function () {
                             var link = vis.selectAll("line").data(_this.links, function (d) { return (d.source.id + "-" + d.target.id); });
-                            link.enter().append("line").attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); }).attr("stroke-width", function (d) { return (d.value / 10); }).attr("class", "link");
+                            link.enter().append("line").attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); }).attr("stroke-width", function (d) { return (d.value / 10); }).attr("class", "link").transition().duration(fadeinTime).style("opacity", 1);
+                            //d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
                             link.append("title").text(function (d) { return d.value; });
                             link.exit().remove();
                             var node = vis.selectAll("g.node").data(_this.nodes, function (d) { return d.id; });
                             var nodeEnter = node.enter().append("g").attr("class", "node").call(force.drag);
-                            nodeEnter.append("svg:circle").attr("r", r).attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); }).attr("class", "nodeStrokeClass").attr("fill", function (d) { return color(d.id); });
-                            nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 14).attr("y", ".31em").text(function (d) { return d.id; });
+                            nodeEnter.append("svg:circle").attr("r", r).attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); }).attr("class", "nodeStrokeClass").attr("fill", function (d) { return color(d.id); }).transition().duration(fadeinTime).style("opacity", 1);
+                            nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 14).attr("y", ".31em").transition().duration(fadeinTime).style("opacity", 1).text(function (d) { return d.id; });
                             node.exit().remove();
                             force.on("tick", function () {
                                 link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });

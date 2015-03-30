@@ -126,20 +126,6 @@ module Pzl.OfficeGraph.Insight {
                 jQuery("#message").append("<p>Last dude on the ball <b>" + maxModifier + "</b> times was <b>" + maxModifierActor.name + "</b>");
             }
 
-            var max = graphCanvas.maxCount();
-            var slider = jQuery("#filterSlider");
-            var data = jQuery("#steplist");
-            var options = jQuery("#steplist option");
-            if (options.size() < max) {
-                jQuery("#maxValue").text(max);
-                slider.attr("max", max);
-                jQuery("#log").prepend(max + "<br/>");
-                options.remove();
-                for (var i = 0; i < max; i++) {
-                    data.append(jQuery('<option></option>').html(i.toString()));
-                }
-            }
-
         } catch (e) {
             //alert(e);
             jQuery("#log").prepend(e);
@@ -147,11 +133,21 @@ module Pzl.OfficeGraph.Insight {
         }
     }
 
-    //function addNodeAndLink(graphCanvas, src, dest) {
-    //    graphCanvas.addNode(src);
-    //    graphCanvas.addNode(dest);
-    //    graphCanvas.addLink(src, dest, 400);
-    //}
+    function updateSlider() {
+        var max = graphCanvas.maxCount();
+        var slider = jQuery("#filterSlider");
+        var data = jQuery("#steplist");
+        var options = jQuery("#steplist option");
+        if (options.size() < max) {
+            jQuery("#maxValue").text(max);
+            slider.attr("max", max);
+            jQuery("#log").prepend(max + "<br/>");
+            options.remove();
+            for (var i = 0; i < max; i++) {
+                data.append(jQuery('<option></option>').html(i.toString()));
+            }
+        }
+    }
 
     function addNodeAndLink(src, dest, timeout) {
         if (src === dest) return;
@@ -161,6 +157,7 @@ module Pzl.OfficeGraph.Insight {
                 graphCanvas.addNode(dest);
                 graphCanvas.addLink(src, dest, edgeLength);
                 Graph.keepNodesOnTop();
+                updateSlider();
             }, timeout);
     }
 
@@ -199,6 +196,8 @@ module Pzl.OfficeGraph.Insight {
 
     export function initializePage(reach: number) {
         jQuery("#log").empty();
+        jQuery("#steplist option").remove();
+        jQuery("#maxValue").text("1");
         var seenEdges: Edge[] = [];
         // This code runs when the DOM is ready and creates a context object which is needed to use the SharePoint object model
         jQuery(document).ready(() => {

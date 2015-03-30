@@ -39,10 +39,15 @@
         .link {
             stroke: #aaa;
             stroke-width: 2px;
+            opacity: 0;
         }
         .node {
             stroke: #fff;
             stroke-width: 2px;
+        }
+
+        .nodeStrokeClass {
+            opacity: 0;
         }
 
         .textClass {
@@ -51,6 +56,7 @@
             font-weight: normal;
             stroke-width: .5;
             font-size: 14px;
+            opacity: 0;
         }
     </style>
 </asp:Content>
