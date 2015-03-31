@@ -47,6 +47,8 @@
     <None Include="Pages\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{53e283f2-348d-4033-bed9-a27dc8436681}</SharePointProjectItemId>
     </None>
+    <Content Include="Images\Puzzlepart-Donut-Digital-watermark.png" />
+    <Content Include="Images\Puzzlepart_logo.png" />
     <Content Include="Pages\Elements.xml" />
     <Content Include="Pages\Default.aspx" />
   </ItemGroup>

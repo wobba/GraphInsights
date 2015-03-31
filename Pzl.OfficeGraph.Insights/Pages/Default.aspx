@@ -29,113 +29,24 @@
 
     <!-- Add your CSS styles to the following file -->
     <link rel="Stylesheet" type="text/css" href="../Content/App.css" />
-    <link rel="Stylesheet" type="text/css" href="../Content/bootstrap.css" />
-
-
 
     <!-- Add your JavaScript to the following file -->
     <script type="text/javascript" src="../Scripts/App.js"></script>
-
-    <style>
-        .link {
-            stroke: #aaa;
-            stroke-width: 2px;
-            opacity: 0;
-        }
-
-        .node {
-            stroke: #fff;
-            stroke-width: 2px;
-        }
-
-        .nodeStrokeClass {
-            opacity: 0;
-        }
-
-        .textClass {
-            stroke: #323232;
-            font-family: "Lucida Grande", "Droid Sans", Arial, Helvetica, sans-serif;
-            font-weight: normal;
-            stroke-width: .5;
-            font-size: 14px;
-            opacity: 0;
-        }
-
-        .container {
-            width: 100%;
-            min-width: 830px;
-            /*border: 1px solid;*/
-            clear: both;
-        }
-
-        .graphArea {
-            width: auto;
-            overflow: hidden;
-        }
-
-        .statsArea {
-            width: 500px;
-            /*background: blue;*/
-            float: right;
-            border: solid 1px #aaa;
-            height: 600px;
-        }
-
-        #actionControls {
-            min-width: 830px;
-            height: 80px;
-            clear: both;
-        }
-
-        #forceGraph {
-            width: 100%;
-            height: 600px;
-            border: solid 1px #aaa;
-        }
-
-        #message {
-            /*margin-top: 80px;*/
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-
-        .sp-peoplepicker-topLevel {
-            width: 200px;
-        }
-
-        .controlItem {
-            float: left;
-            margin-right: 20px;
-        }
-
-        input.kickIt {
-            width: 200px;
-            height: 70px;
-            font-size: 30px;
-        }
-
-        .controlNudge {
-            margin-top: 7px;
-        }
-
-        #log {
-            margin-top: 50px;
-            width: 100%;
-            height: 200px;
-            border: solid 1px #aaa;
-            overflow: scroll;
-        }
-    </style>
 </asp:Content>
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    Pzl Edge Insights aka Co-Auth Monitor
+    <div style="vertical-align: top">
+        Collaboration Insights by
+        <img src="../Images/Puzzlepart_logo.png" style="height: 40px;margin-top:8px" />
+    </div>
 </asp:Content>
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
-    <h2>All stats presented in this App revolves around how people work together on documents, seen from <b>your</b> point of view. If there are clusters of documents you don't have access to they will not show up. Go poke an eye!</h2>
+    <h2>All stats presented in revolves around how people work together on items, seen from <b>your</b> point of view.
+        <br />
+        If there are clusters of documents you don't have access to they will not show up. Go poke an eye!</h2>
     <hr />
     <div>
         <div id="actionControls">

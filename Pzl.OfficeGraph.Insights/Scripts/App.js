@@ -239,7 +239,8 @@ var Pzl;
                 console.log(message);
             }
             function hideSingleCollab(count) {
-                graphCanvas.showFilterByCount(count);
+                if (graphCanvas)
+                    graphCanvas.showFilterByCount(count);
             }
             Insight.hideSingleCollab = hideSingleCollab;
             function initializePage(reach) {

@@ -3,5 +3,7 @@
   <Files>
     <ProjectItemFile Source="Elements.xml" Target="Images\" Type="ElementManifest" />
     <ProjectItemFile Source="AppIcon.png" Target="Images\" Type="ElementFile" />
+    <ProjectItemFile Source="Puzzlepart_logo.png" Target="Images\" Type="ElementFile" />
+    <ProjectItemFile Source="Puzzlepart-Donut-Digital-watermark.png" Target="Images\" Type="ElementFile" />
   </Files>
 </ProjectItem>

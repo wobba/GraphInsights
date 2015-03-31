@@ -275,7 +275,7 @@ module Pzl.OfficeGraph.Insight {
     }
 
     export function hideSingleCollab(count: number) {
-        graphCanvas.showFilterByCount(count);
+        if (graphCanvas) graphCanvas.showFilterByCount(count);
     }
 
     export function initializePage(reach: number) {
