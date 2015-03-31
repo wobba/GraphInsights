@@ -17,18 +17,19 @@
     <script type="text/javascript" src="../Scripts/SearchHelper.js"></script>
     <script type="text/javascript" src="../Scripts/Item.js"></script>
     <script type="text/javascript" src="../Scripts/ForceGraph.js"></script>
-    
-    <SharePoint:ScriptLink name="clienttemplates.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="clientforms.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="clientpeoplepicker.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="autofill.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="sp.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="sp.runtime.js" runat="server" LoadAfterUI="true" Localizable="false" />
-    <SharePoint:ScriptLink name="sp.core.js" runat="server" LoadAfterUI="true" Localizable="false" />
+
+    <SharePoint:ScriptLink Name="clienttemplates.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="clientforms.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="clientpeoplepicker.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="autofill.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="sp.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="sp.runtime.js" runat="server" LoadAfterUI="true" Localizable="false" />
+    <SharePoint:ScriptLink Name="sp.core.js" runat="server" LoadAfterUI="true" Localizable="false" />
     <meta name="WebPartPageExpansion" content="full" />
 
     <!-- Add your CSS styles to the following file -->
     <link rel="Stylesheet" type="text/css" href="../Content/App.css" />
+    <link rel="Stylesheet" type="text/css" href="../Content/bootstrap.css" />
 
 
 
@@ -41,6 +42,7 @@
             stroke-width: 2px;
             opacity: 0;
         }
+
         .node {
             stroke: #fff;
             stroke-width: 2px;
@@ -58,6 +60,71 @@
             font-size: 14px;
             opacity: 0;
         }
+
+        .container {
+            width: 100%;
+            min-width: 830px;
+            /*border: 1px solid;*/
+            clear: both;
+        }
+
+        .graphArea {
+            width: auto;
+            overflow: hidden;
+        }
+
+        .statsArea {
+            width: 500px;
+            /*background: blue;*/
+            float: right;
+            border: solid 1px #aaa;
+            height: 600px;
+        }
+
+        #actionControls {
+            min-width: 830px;
+            height: 80px;
+            clear: both;
+        }
+
+        #forceGraph {
+            width: 100%;
+            height: 600px;
+            border: solid 1px #aaa;
+        }
+
+        #message {
+            /*margin-top: 80px;*/
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .sp-peoplepicker-topLevel {
+            width: 200px;
+        }
+
+        .controlItem {
+            float: left;
+            margin-right: 20px;
+        }
+
+        input.kickIt {
+            width: 200px;
+            height: 70px;
+            font-size: 30px;
+        }
+
+        .controlNudge {
+            margin-top: 7px;
+        }
+
+        #log {
+            margin-top: 50px;
+            width: 100%;
+            height: 200px;
+            border: solid 1px #aaa;
+            overflow: scroll;
+        }
     </style>
 </asp:Content>
 
@@ -71,25 +138,36 @@
     <h2>All stats presented in this App revolves around how people work together on documents, seen from <b>your</b> point of view. If there are clusters of documents you don't have access to they will not show up. Go poke an eye!</h2>
     <hr />
     <div>
-        Pick start actor:<div id="peoplePickerDiv"></div>
-        <input type="hidden" id="actorId"/>
-    </div>
-    <div style="margin-top: 10px; margin-bottom: 10px">
-        Colleague reach #
-        <input id="colleagueReach" type="text" value="30" />
-        <input type="button" onclick=" Pzl.OfficeGraph.Insight.initializePage(jQuery('#colleagueReach').val()); return false; " value="Kick it!" />
-        Filter <span>0</span><input id="filterSlider" type="range" min="0" max="1" step="1" value="0" onchange="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" onmousemove="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" list="steplist" /><span id="maxValue">1</span>
-        <datalist id="steplist"/>
-        
-        <%--<input type="button" onclick="Pzl.OfficeGraph.Insight.hideSingleCollab(1); return false; " value="Remove single item collaborators" />--%>
-    </div>
-
-    <div style="width: 1000px">
-        <div id="forceGraph" style="width: 100%; height: 600px; border: solid 1px #aaa; clear: both"></div>
-        <div id="message" style="float: left; width: 50%">
+        <div id="actionControls">
+            <div class="controlItem">
+                Pick start actor:<div id="peoplePickerDiv" class="controlNudge"></div>
+                <input type="hidden" id="actorId" />
+            </div>
+            <div class="controlItem">
+                Colleague reach #
+                    <div>
+                        <input id="colleagueReach" type="text" value="30" class="controlNudge" />
+                    </div>
+            </div>
+            <div class="controlItem">
+                <div>Filter</div>
+                <span>0</span><input id="filterSlider" type="range" min="0" max="1" step="1" value="0" onchange="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" onmousemove="Pzl.OfficeGraph.Insight.hideSingleCollab(this.value)" list="steplist" /><span id="maxValue">1</span>
+                <datalist id="steplist" />
+            </div>
+            <div class="controlItem">
+                <input type="button" onclick=" Pzl.OfficeGraph.Insight.initializePage(jQuery('#colleagueReach').val()); return false; " value="Kick it!" class="kickIt" />
+            </div>
         </div>
-        <div id="log" style="float: left; width: 45%; height: 400px; border: solid 1px black; overflow: scroll">
+    </div>
+    <div class="container">
+        <div class="statsArea">
+            <div id="message"></div>
         </div>
+        <div class="graphArea">
+            <div id="forceGraph"></div>
+        </div>
+    </div>
+    <div id="log">
     </div>
 
 </asp:Content>

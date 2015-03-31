@@ -18,7 +18,7 @@ var Pzl;
                     }
                     return Math.round(count / this.collabItems.length);
                 };
-                // Average number of recorded saves per item
+                // Number of documents edited by actor only
                 Actor.prototype.getEgoSaveCount = function () {
                     var meOnly = 0;
                     if (this.collabItems) {
@@ -31,18 +31,6 @@ var Pzl;
                     }
                     return meOnly;
                 };
-                //getModificationsPerDay(): number {
-                //    var start = this.getMinEdgeDate();
-                //    var end = this.getMaxEdgeDate();
-                //    var ms = moment(end).diff(moment(start));
-                //    var d = moment.duration(ms);
-                //    var days = d.days();
-                //    if (days === 0) { days = 1 };
-                //    var mods = this.getNumberOfModificationsByYou();
-                //    //return Math.round(mods / days);
-                //    console.log(days + ":" + mods + " - " + start + ":" + end);
-                //    return mods / days;
-                //}
                 Actor.prototype.getCollaborationRatio = function () {
                     var meOnly = 0;
                     var all = 0;

@@ -61,17 +61,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                     console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
                     var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                     if (link.count <= hideCount) {
-                        //d3.selectAll(id).style("opacity", 0); // hide links
+                        //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
                         d3.selectAll(id).transition().duration(animDuration).style("opacity", 0);
-                        /*
-                         transition()
-    .delay(function(d,i) { return i * 10; })
-    .duration(1250)
-    .attr('opacity', 1);
-                         */
-
                     } else {
-                        //d3.selectAll(id).style("opacity", 1); // show
                         d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
                     }
                 }
@@ -81,16 +73,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                     var selectorNode = "#Node" + this.validCssName(node.id);
                     var selectorText = "#NodeText" + this.validCssName(node.id);
                     if (this.isSingleNode(node.id, hideCount)) {
-                        //d3.selectAll(selectorNode).style("opacity", 0); // hide links
-                        //d3.selectAll(selectorText).style("opacity", 0); // hide label
-
                         d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
                         d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
-                        //hide label
                     } else {
-                        //d3.selectAll(selectorNode).style("opacity", 1); // show label
-                        //d3.selectAll(selectorText).style("opacity", 1); // show label
-
                         d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
                         d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
                     }
@@ -161,7 +146,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                         found = true;
                         this.links[i].count += 1; // keep track of number of collabs between actors
                         // existing link - shorten to show closeness
-                        if (this.links[i].value > 20) {
+                        if (this.links[i].value > 50) {
                             this.links[i].value = this.links[i].value / 2;
                         }
 
@@ -295,10 +280,8 @@ module Pzl.OfficeGraph.Insight.Graph {
                 // Restart the force layout.
                 force
                     .charge(-10 / k)
-                    .gravity(10 * k)
-                //.gravity(.01)
-                //.gravity(.000001)
-                // .charge(-80000)
+                    //.gravity(10 * k) 100
+                    .gravity(30 * k)
                     .friction(0.2) //default 0.9
                     .linkDistance(function (d) { return d.value /* 10*/ })
                     .size([w, h])

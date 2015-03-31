@@ -7,127 +7,208 @@
 //ExecuteOrDelayUntilScriptLoaded(initializePage, "sp.js");
 
 module Pzl.OfficeGraph.Insight {
+
+    enum HighScoreType {
+        CollaborationItemCount, // Actor with most items he/she's co-authoring on - # of items
+        CollaborationActorCount, // Actor with most people he/she's co-authoring with - # of actors
+        ItemModificationsAverage, // Actor who has the highest average of saves per item - # of saves
+        EgoSaveCount, // Actor who produces most on his/her own - # of items
+        LongestLivingItemWithCollab, // Document still being co-authored - # of days
+        HighestItemSaveCount, // Actor who has the highest save count on a single item - # of saves
+        StarterCount, // Items created by actor which are collaborated on - # of items
+        LastSaverCount, // Items with multiple co-authors which actor had the last save - # of items
+    }
+
+    class HighScoreEntry {
+        value: number;
+        actor: Actor;
+
+        constructor(actor: Actor, value: number) {
+            this.actor = actor;
+            this.value = value;
+        }
+    }
+
+    class HighScoreComparison {
+        constructor(template: string) {
+            this.template = template;
+        }
+
+        rankType: HighScoreType;
+        rankValues: HighScoreEntry[] = [];
+        template: string; // {benchmarkRank} {compareValue} {topActor} {topValue} 
+
+        getMetricString(benchMarkActor: Actor): string {
+            if (this.rankValues.length === 0) return "";
+            this.rankValues.sort((a, b) => { return b.value - a.value; });
+            var topEntry = this.rankValues[0];
+            var compareActor = benchMarkActor;
+            var compareEntry = this.rankValues.filter(item => (item.actor.id === compareActor.id))[0];
+            var index = this.rankValues.indexOf(compareEntry) + 1;
+
+            return this.template
+                .replace("{topActor}", topEntry.actor.name)
+                .replace("{topValue}", topEntry.value.toString())
+                .replace("{benchmarkRank}", index.toString())
+                .replace("{total}", this.rankValues.length.toString())
+                .replace("{compareValue}", compareEntry.value.toString());
+        }
+    }
+
+    class ItemCountHighScore extends HighScoreComparison {
+        constructor() { super("<p>Most active collaborator is <b>{topActor}</b> co-authoring on <b>{topValue}</b> items, while you rank <b>#{benchmarkRank}</b> of </b>{total}</b>"); }
+    }
+
+    class ActorCountHighScore extends HighScoreComparison {
+        constructor() { super("<p>Most social collaborator is <b>{topActor}</b> with a reach of <b>{topValue}</b> colleagues. You rank <b>#{benchmarkRank}</b> of </b>{total}</b> with a reach of <b>{compareValue}</b>"); }
+    }
+
+    class ActorLowCollaboratorHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p>Most selfish collaborator is <b>{topActor}</b> with only <b>{topValue}</b> items as co-author");
+        }
+
+        minCollabItems: number = 200000;
+
+        getMetricString(benchMarkActor: Actor): string {
+            if (this.rankValues.length === 0) return "";
+            this.rankValues.sort((a, b) => { return a.value - b.value; });
+
+            var zeroCollaborators = this.rankValues.filter(item => item.value === 0).map(item => item.actor.name);
+            if (zeroCollaborators.length > 0) {
+                this.template = "<p>The bunch of <b>{zero}</b> refuse to collaborate in public";
+                var nameString = zeroCollaborators.join(", ").replace(/,([^,]*)$/, '</b> and <b>$1');
+                return this.template.replace("{zero}", nameString);
+            }
+
+            var topEntry = this.rankValues[0];
+            var compareActor = benchMarkActor;
+            var compareEntry = this.rankValues.filter(item => (item.actor.id === compareActor.id))[0];
+            var index = this.rankValues.indexOf(compareEntry) + 1;
+
+            return this.template
+                .replace("{topActor}", topEntry.actor.name)
+                .replace("{topValue}", topEntry.value.toString())
+                .replace("{benchmarkRank}", index.toString())
+                .replace("{total}", this.rankValues.length.toString())
+                .replace("{compareValue}", compareEntry.value.toString());
+        }
+    }
+
+    class EgoHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p>Most active ego content producer is <b>{topActor}</b> with <b>{topValue}</b> items produced all alone (vs. {collab} collab). You rank <b>#{benchmarkRank}</b> of </b>{total}</b> with <b>{compareValue}</b> items");
+        }
+
+        getMetricString(benchMarkActor: Actor): string {
+            var metric = super.getMetricString(benchMarkActor);
+
+            var topEntry = this.rankValues[0];
+
+            var count = topEntry.actor.getCollaborationItemCount();
+            return metric.replace("{collab}", count.toString());
+        }
+    }
+
+    class FrequentSaverHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p><b>{topActor}</b> is the most frequent saver with an average of <b>{topValue}</b> saves per item. You rank <b>#{benchmarkRank}</b> of </b>{total} with an average of <b>{compareValue}</b> saves");
+        }
+    }
+
+    class TopSaverHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p>If you're afraid to lose your work, talk to <b>{topActor}</b> who saved a single item a total of <b>{topValue}(!)</b> times. You rank <b>#{benchmarkRank}</b> of </b>{total} with a top save count of <b>{compareValue}</b>");
+        }
+    }
+
+    class ItemStarterHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p>#1 item starter is <b>{topActor}</b> igniting a whopping <b>{topValue}</b> items. You rank <b>#{benchmarkRank}</b> of </b>{total} by creating <b>{compareValue}</b> new item(s)");
+        }
+    }
+
+    class LastModifierHighScore extends HighScoreComparison {
+        constructor() {
+            super("<p>Last dude on the ball <b>{topValue}</b> times was <b>{topActor}</b>. You rank <b>#{benchmarkRank}</b> of </b>{total} with a measly <b>{compareValue}</b> save(s)");
+        }
+    }
+
     import MyGraph = Graph.MyGraph;
     var searchHelper = new SearchHelper(),
         graphCanvas: MyGraph,
         edgeLength = 300,
-        mostCollabItems = 0,
-        mostCollabItemsActor,
-        minCollabItems = 200000,
-        minCollabItemsActor,
-        maxCollaborators = 0,
-        maxCollaboratorsActor,
-        maxEditsPerItemAverage = 0,
-        maxEditsPerItemAverageActor,
-        maxEgo = 0,
-        maxEgoActor,
-        maxCreator = 0,
-        maxCreatorActor,
-        maxModifier = 0,
-        maxModifierActor,
-        maxSaverPerItem = 0,
-        maxSaverPerItemActor,
+        collabItemHighScore = new ItemCountHighScore(),
+        collabActorHighScore = new ActorCountHighScore(),
+        collabMinActorHightScore = new ActorLowCollaboratorHighScore(),
+        collabEgoHighScore = new EgoHighScore(),
+        frequentSaverHighScore = new FrequentSaverHighScore(),
+        topSaverHighScore = new TopSaverHighScore(),
+        itemStarterHighScore = new ItemStarterHighScore,
+        lastModifierHighScore = new LastModifierHighScore,
         longestItem: Item,
-        zeroCollaborators: string[] = [];
+        benchmarkActor: Actor;
 
-    function updateStats(actor: Actor) {
+    function updateStats(actor: Actor, benchMarkAgainstActor: boolean) {
         try {
-            var currentCollabItemCount = actor.getCollaborationItemCount();
-            if (currentCollabItemCount > mostCollabItems) {
-                mostCollabItems = currentCollabItemCount;
-                mostCollabItemsActor = actor;
-            }
 
-            if (currentCollabItemCount <= minCollabItems) {
-                minCollabItems = currentCollabItemCount;
-                minCollabItemsActor = actor;
-                if (minCollabItems === 0) {
-                    zeroCollaborators.push(actor.name);
-                }
-            }
+            if (benchMarkAgainstActor) benchmarkActor = actor;
+
+            var currentCollabItemCount = actor.getCollaborationItemCount();
+            var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
+            collabItemHighScore.rankValues.push(collabItemEntry);
+
+            var minCollabEntry = new HighScoreEntry(actor, currentCollabItemCount);
+            collabMinActorHightScore.rankValues.push(minCollabEntry);
+
 
             var thisMaxCollaborators = actor.getCollaborationActorCount();
-            if (thisMaxCollaborators > maxCollaborators) {
-                maxCollaborators = thisMaxCollaborators;
-                maxCollaboratorsActor = actor;
-            }
+            var collabActorEntry = new HighScoreEntry(actor, thisMaxCollaborators);
+            collabActorHighScore.rankValues.push(collabActorEntry);
 
-            var thisMaxEditsPerItemAverage = actor.getItemModificationsAverage();
-            if (thisMaxEditsPerItemAverage > maxEditsPerItemAverage) {
-                maxEditsPerItemAverage = thisMaxEditsPerItemAverage;
-                maxEditsPerItemAverageActor = actor;
-            }
 
             var thisMaxEgo = actor.getEgoSaveCount();
-            if (thisMaxEgo > maxEgo) {
-                maxEgo = thisMaxEgo;
-                maxEgoActor = actor;
-            }
+            var egoCollabEntry = new HighScoreEntry(actor, thisMaxEgo);
+            collabEgoHighScore.rankValues.push(egoCollabEntry);
+
+            var thisMaxEditsPerItemAverage = actor.getItemModificationsAverage();
+            var frequentSaverEntry = new HighScoreEntry(actor, thisMaxEditsPerItemAverage);
+            frequentSaverHighScore.rankValues.push(frequentSaverEntry);
 
             var thisLongestItem = actor.getLongestLivingItemWithCollab();
             if ((longestItem === undefined && thisLongestItem !== undefined) || (thisLongestItem !== undefined && thisLongestItem.itemLifeSpanInDays() > longestItem.itemLifeSpanInDays())) {
                 longestItem = thisLongestItem;
             }
 
+            var thisMaxSaverPerItem = actor.getHighestItemSaveCount();
+            var topSaverEntry = new HighScoreEntry(actor, thisMaxSaverPerItem);
+            topSaverHighScore.rankValues.push(topSaverEntry);
+
             var thisMaxCreator = actor.getStarterCount();
-            if (thisMaxCreator > maxCreator) {
-                maxCreator = thisMaxCreator;
-                maxCreatorActor = actor;
-            }
+            var itemStarterEntry = new HighScoreEntry(actor, thisMaxCreator);
+            itemStarterHighScore.rankValues.push(itemStarterEntry);
 
             var thismaxModifier = actor.getLastSaverCount();
-            if (thismaxModifier > maxModifier) {
-                maxModifier = thismaxModifier;
-                maxModifierActor = actor;
-            }
+            var lastModifierEntry = new HighScoreEntry(actor, thismaxModifier);
+            lastModifierHighScore.rankValues.push(lastModifierEntry);
 
-            var thisMaxSaverPerItem = actor.getHighestItemSaveCount();
-            if (thisMaxSaverPerItem > maxSaverPerItem) {
-                maxSaverPerItem = thisMaxSaverPerItem;
-                maxSaverPerItemActor = actor;
-            }
 
             jQuery("#message").empty();
-            if (mostCollabItemsActor) {
-                jQuery("#message").append("<p>Most active collaborator is <b>" + mostCollabItemsActor.name + "</b> co-authoring on <b>" + mostCollabItems + "</b> items");
-            }
-
-            if (zeroCollaborators.length > 0) {
-                jQuery("#message").append("<p>The bunch of <b>" + zeroCollaborators.join(", ").replace(/,([^,]*)$/, '</b> and <b>$1') + "</b> refuse to collaborate in public");
-            }
-            else {
-                jQuery("#message").append("<p>Most selfish collaborator is <b>" + minCollabItemsActor.name + "</b> with only <b>" + minCollabItems + "</b> items as co-author");
-            }
-
-            if (maxCollaboratorsActor) {
-                jQuery("#message").append("<p>Most social collaborator is <b>" + maxCollaboratorsActor.name + "</b> with a reach of <b>" + maxCollaborators + "</b> colleagues");
-            }
-            if (maxEgoActor) {
-                jQuery("#message").append("<p>Most active ego content producer is <b>" + maxEgoActor.name + "</b> with <b>" + maxEgo + "</b> items produced all alone (vs. " + maxEgoActor.getCollaborationItemCount() + " collab)");
-            }
-
-            if (maxEditsPerItemAverageActor) {
-                jQuery("#message").append("<p><b>" + maxEditsPerItemAverageActor.name + "</b> is the most frequent saver with an average of <b>" + maxEditsPerItemAverage + "</b> saves per item ");
-            }
+            jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
 
             if (longestItem) {
                 jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
             }
 
-            if (maxSaverPerItemActor) {
-                jQuery("#message").append("If you're afraid to lose your work, talk to <b>" + maxSaverPerItemActor.name + "</b> who saved a single item a total of <b>" + maxSaverPerItem + "(!)</b> times");
-            }
-
-            if (maxCreatorActor) {
-                jQuery("#message").append("<p>#1 item starter is <b>" + maxCreatorActor.name + "</b> igniting a whopping <b>" + maxCreator + "</b> items");
-            }
-
-            if (maxModifierActor) {
-                jQuery("#message").append("<p>Last dude on the ball <b>" + maxModifier + "</b> times was <b>" + maxModifierActor.name + "</b>");
-            }
+            jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
+            jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
 
         } catch (e) {
-            //alert(e);
             jQuery("#log").prepend(e);
             console.log(e.message);
         }
@@ -138,10 +219,9 @@ module Pzl.OfficeGraph.Insight {
         var slider = jQuery("#filterSlider");
         var data = jQuery("#steplist");
         var options = jQuery("#steplist option");
-        if (options.size() < max) {
+        if (options.length < max) {
             jQuery("#maxValue").text(max);
             slider.attr("max", max);
-            jQuery("#log").prepend(max + "<br/>");
             options.remove();
             for (var i = 0; i < max; i++) {
                 data.append(jQuery('<option></option>').html(i.toString()));
@@ -187,10 +267,14 @@ module Pzl.OfficeGraph.Insight {
                 };
             }
         }
-        //Graph.keepNodesOnTop();
     }
 
-    export function hideSingleCollab(count:number) {
+    function log(message: string) {
+        jQuery("#log").prepend(message + "<br/>");
+        console.log(message);
+    }
+
+    export function hideSingleCollab(count: number) {
         graphCanvas.showFilterByCount(count);
     }
 
@@ -199,12 +283,10 @@ module Pzl.OfficeGraph.Insight {
         jQuery("#steplist option").remove();
         jQuery("#maxValue").text("1");
         var seenEdges: Edge[] = [];
-        // This code runs when the DOM is ready and creates a context object which is needed to use the SharePoint object model
         jQuery(document).ready(() => {
             graphCanvas = Graph.init("forceGraph");
 
             SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor",() => {
-                //var helper = new Insight.SearchHelper();
                 var runfunc;
                 if (!selectedActor) {
                     runfunc = searchHelper.loadAllOfMe(reach);
@@ -212,42 +294,31 @@ module Pzl.OfficeGraph.Insight {
                     runfunc = searchHelper.populateActor(selectedActor, reach);
                 }
 
-                //(function (): Q.IPromise<any> {
-                //    var deferred = Q.defer<any>();
-
-                //    return deferred.promise;
-                //})().then(c => {
-
-                //});
-
                 runfunc.delay(1000).done(me => {
-                    //graphCanvas.addNode(me.name);
+                    log("Processing edges for " + me.name);
+                    log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
 
-                    $("#log").prepend("Processing edges for " + me.name);
-                    console.log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
-                    //console.log("\tNumber of modifications: " + me.getNumberOfModificationsByYou() + " per day: " + me.getModificationsPerDay());
-
-                    updateStats(me);
+                    updateStats(me, true);
 
                     graphEdges(me, seenEdges);
 
                     for (var i = 0; i < me.associates.length; i++) {
                         var c = me.associates[i];
-                        $("#log").prepend("Processing edges for " + c.name + "<br/>");
+                        log("Processing edges for " + c.name);
                         if (c.name === me.name) {
                             continue;
                         }
                         searchHelper.populateActor(c, reach).delay(500 * i).done(c => {
                             if (c.collabItems.length === 0) {
-                                $("#log").prepend("No collaborative edges found for " + c.name + "<br/>");
+                                log("No collaborative edges found for " + c.name);
                                 return;
                             }
 
                             graphEdges(c, seenEdges);
 
-                            console.log(c.name + "(" + c.id + ")" + " has " + c.associates.length + " associates and " + c.collabItems.length + " items");
+                            log(c.name + "(" + c.id + ")" + " has " + c.associates.length + " associates and " + c.collabItems.length + " items");
 
-                            updateStats(c);
+                            updateStats(c, false);
                         });
                     }
                 });
@@ -273,20 +344,18 @@ interface IPickerWrapper {
 
 declare var SPClientPeoplePicker_InitStandaloneControlWrapper: IPickerWrapper;
 
-
 var selectedActor: Pzl.OfficeGraph.Insight.Actor = null;
 
 //Load the people picker
 function loadPeoplePicker(peoplePickerElementId) {
-    var EnsurePeoplePickerRefinementInit = function () {
+    var EnsurePeoplePickerRefinementInit = () => {
         var schema = new Array();
         schema["PrincipalAccountType"] = "User";
         schema["AllowMultipleValues"] = false;
-        schema["Width"] = 300;
-        schema["OnUserResolvedClientScript"] = function () {
+        schema["Width"] = 200;
+        schema["OnUserResolvedClientScript"] = () => {
             var pickerObj = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDiv_TopSpan;
             var users = pickerObj.GetAllUserInfo();
-            //var userInfo = '';
             var person = users[0];
 
             if (person != null) {
@@ -306,6 +375,5 @@ function loadPeoplePicker(peoplePickerElementId) {
             });
         });
     }
-    //EnsurePeoplePickerRefinementInit("peoplePicker");
     EnsurePeoplePickerRefinementInit();
 }

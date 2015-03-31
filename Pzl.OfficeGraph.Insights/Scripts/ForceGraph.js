@@ -40,11 +40,10 @@ var Pzl;
                                 console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                                 if (link.count <= hideCount) {
-                                    //d3.selectAll(id).style("opacity", 0); // hide links
+                                    //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
                                     d3.selectAll(id).transition().duration(animDuration).style("opacity", 0);
                                 }
                                 else {
-                                    //d3.selectAll(id).style("opacity", 1); // show
                                     d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
                                 }
                             }
@@ -53,14 +52,10 @@ var Pzl;
                                 var selectorNode = "#Node" + this.validCssName(node.id);
                                 var selectorText = "#NodeText" + this.validCssName(node.id);
                                 if (this.isSingleNode(node.id, hideCount)) {
-                                    //d3.selectAll(selectorNode).style("opacity", 0); // hide links
-                                    //d3.selectAll(selectorText).style("opacity", 0); // hide label
                                     d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
                                     d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
                                 }
                                 else {
-                                    //d3.selectAll(selectorNode).style("opacity", 1); // show label
-                                    //d3.selectAll(selectorText).style("opacity", 1); // show label
                                     d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
                                     d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
                                 }
@@ -123,7 +118,7 @@ var Pzl;
                                     found = true;
                                     _this.links[i].count += 1; // keep track of number of collabs between actors
                                     // existing link - shorten to show closeness
-                                    if (_this.links[i].value > 20) {
+                                    if (_this.links[i].value > 50) {
                                         _this.links[i].value = _this.links[i].value / 2;
                                     }
                                     if (_this.links[i].count > _this.maxCountB) {
@@ -196,7 +191,7 @@ var Pzl;
                             //http://stackoverflow.com/questions/9901565/charge-based-on-size-d3-force-layout
                             var k = Math.sqrt(20 / (w * h));
                             // Restart the force layout.
-                            force.charge(-10 / k).gravity(10 * k).friction(0.2).linkDistance(function (d) {
+                            force.charge(-10 / k).gravity(30 * k).friction(0.2).linkDistance(function (d) {
                                 return d.value; /* 10*/
                             }).size([w, h]).start();
                         };

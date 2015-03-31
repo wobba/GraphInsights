@@ -22,7 +22,7 @@ module Pzl.OfficeGraph.Insight {
             return Math.round(count / this.collabItems.length);
         }
 
-        // Average number of recorded saves per item
+        // Number of documents edited by actor only
         getEgoSaveCount(): number {
             var meOnly = 0;
             if (this.collabItems) {
@@ -35,19 +35,6 @@ module Pzl.OfficeGraph.Insight {
             }
             return meOnly;
         }
-
-        //getModificationsPerDay(): number {
-        //    var start = this.getMinEdgeDate();
-        //    var end = this.getMaxEdgeDate();
-        //    var ms = moment(end).diff(moment(start));
-        //    var d = moment.duration(ms);
-        //    var days = d.days();
-        //    if (days === 0) { days = 1 };
-        //    var mods = this.getNumberOfModificationsByYou();
-        //    //return Math.round(mods / days);
-        //    console.log(days + ":" + mods + " - " + start + ":" + end);
-        //    return mods / days;
-        //}
 
         getCollaborationRatio(): number {
             var meOnly = 0;
@@ -167,28 +154,6 @@ module Pzl.OfficeGraph.Insight {
             }
             return actorId.toString();
         }
-
-        //private getMinEdgeDate() {
-        //    var date = new Date(2099, 12, 31);
-        //    for (var i = 0; i < this.collabItems.length; i++) {
-        //        var itemDate = this.collabItems[i].getMinDateEdge(this.id);
-        //        if (itemDate < date) {
-        //            date = itemDate;
-        //        }
-        //    }
-        //    return date;
-        //}
-
-        //private getMaxEdgeDate() {
-        //    var date = new Date(1970, 1, 1);
-        //    for (var i = 0; i < this.collabItems.length; i++) {
-        //        var itemDate = this.collabItems[i].getMaxDateEdge();
-        //        if (itemDate > date) {
-        //            date = itemDate;
-        //        }
-        //    }
-        //    return date;
-        //}
     }
 
     export class Edge {
