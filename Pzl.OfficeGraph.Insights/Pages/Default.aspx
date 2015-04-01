@@ -78,7 +78,8 @@
             <div id="forceGraph"></div>
         </div>
     </div>
-    <div id="log">
-    </div>
+    <marquee id="log"  behavior="scroll" direction="up" loop="1"></marquee>
+<%--    <div id="log">
+    </div>--%>
 
 </asp:Content>

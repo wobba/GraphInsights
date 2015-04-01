@@ -19,6 +19,7 @@ module Pzl.OfficeGraph.Insight {
             for (var i = 0; i < this.collabItems.length; i++) {
                 count = count + this.collabItems[i].getNumberOfEditsByActor(this, Inclusion.ActorOnly);
             }
+            if (count === 0) return 0;
             return Math.round(count / this.collabItems.length);
         }
 
@@ -49,6 +50,7 @@ module Pzl.OfficeGraph.Insight {
                     }
                 }
             }
+            if (meOnly === 0) return 0;
             return meOnly / all;
         }
 

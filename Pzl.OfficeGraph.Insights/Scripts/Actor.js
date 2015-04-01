@@ -16,6 +16,8 @@ var Pzl;
                     for (var i = 0; i < this.collabItems.length; i++) {
                         count = count + this.collabItems[i].getNumberOfEditsByActor(this, 0 /* ActorOnly */);
                     }
+                    if (count === 0)
+                        return 0;
                     return Math.round(count / this.collabItems.length);
                 };
                 // Number of documents edited by actor only
@@ -45,6 +47,8 @@ var Pzl;
                             }
                         }
                     }
+                    if (meOnly === 0)
+                        return 0;
                     return meOnly / all;
                 };
                 // Item count with at least 2 authors

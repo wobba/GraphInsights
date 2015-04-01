@@ -27,7 +27,7 @@ module Pzl.OfficeGraph.Insight.Graph {
         links;
         nodes;
         maxCount; // max number of collabs
-        maxCountB : number = 1;
+        maxCountB: number = 1;
 
         constructor(domId: string) {
             var findNodeIndex = id => {
@@ -88,7 +88,6 @@ module Pzl.OfficeGraph.Insight.Graph {
                 var idx = findNodeIndex(id);
                 if (idx === -1) {
                     this.nodes.push({ "id": id });
-                    //                    nodes.push({ "id": id, "x": 500, "y": 300 });
                     update();
                 }
             };
@@ -126,7 +125,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 update();
             };
 
-            this.maxCount = function() {
+            this.maxCount = function () {
                 return this.maxCountB;
             }
 
@@ -166,20 +165,15 @@ module Pzl.OfficeGraph.Insight.Graph {
             };
 
             var findNode = id => {
-                for (var i in this.nodes) {
+                for (var i = 0; i < this.nodes.length; i++) {
                     if (this.nodes[i]["id"] === id) return this.nodes[i];
                 }
-                ;
-            };
-
+                return null;
+            }
 
             var w = jQuery("#" + domId).width();
             var h = jQuery("#" + domId).height();
-            var r = 12;
-
-            // set up the D3 visualisation in the specified element
-            //var w = 1200,
-            //    h = 600;
+            var r = 16;
 
             var color = d3.scale.category20();
 
@@ -225,7 +219,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 nodeEnter.append("svg:circle")
                     .attr("r", r)
                     .attr("id", d => ("Node" + this.validCssName(d.id)))
-                    .attr("class", "nodeStrokeClass")                    
+                    .attr("class", "nodeStrokeClass")
                     .attr("fill", d => color(d.id))
                     .transition().duration(fadeinTime).style("opacity", 1);
 
@@ -245,11 +239,6 @@ module Pzl.OfficeGraph.Insight.Graph {
                         .attr("x2", d => d.target.x)
                         .attr("y2", d => d.target.y);
 
-
-                    //node.attr("cx", function (d) { return d.x = Math.max(r, Math.min(w - r, d.x)); })
-                    //    .attr("cy", function (d) { return d.y = Math.max(r, Math.min(w - r, d.y)); });
-
-                    
                     node.attr("transform", d => {
                         // keep nodes inside canvas - code by mikael
                         //var move = 50;
@@ -270,8 +259,6 @@ module Pzl.OfficeGraph.Insight.Graph {
 
                         return "translate(" + d.x + "," + d.y + ")";
                     });
-
-
                 });
 
                 //http://stackoverflow.com/questions/9901565/charge-based-on-size-d3-force-layout
@@ -280,10 +267,10 @@ module Pzl.OfficeGraph.Insight.Graph {
                 // Restart the force layout.
                 force
                     .charge(-10 / k)
-                    //.gravity(10 * k) 100
+                //.gravity(10 * k) 100
                     .gravity(30 * k)
                     .friction(0.2) //default 0.9
-                    .linkDistance(function (d) { return d.value /* 10*/ })
+                    .linkDistance(d => d.value)
                     .size([w, h])
                     .start();
             };

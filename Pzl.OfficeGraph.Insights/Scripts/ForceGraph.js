@@ -67,7 +67,6 @@ var Pzl;
                             var idx = findNodeIndex(id);
                             if (idx === -1) {
                                 _this.nodes.push({ "id": id });
-                                //                    nodes.push({ "id": id, "x": 500, "y": 300 });
                                 update();
                             }
                         };
@@ -135,18 +134,15 @@ var Pzl;
                             update();
                         };
                         var findNode = function (id) {
-                            for (var i in _this.nodes) {
+                            for (var i = 0; i < _this.nodes.length; i++) {
                                 if (_this.nodes[i]["id"] === id)
                                     return _this.nodes[i];
                             }
-                            ;
+                            return null;
                         };
                         var w = jQuery("#" + domId).width();
                         var h = jQuery("#" + domId).height();
-                        var r = 12;
-                        // set up the D3 visualisation in the specified element
-                        //var w = 1200,
-                        //    h = 600;
+                        var r = 16;
                         var color = d3.scale.category20();
                         var vis = d3.select("#" + domId).append("svg:svg").attr("width", w).attr("height", h).attr("id", "svg").attr("pointer-events", "all").attr("viewBox", "0 0 " + w + " " + h).attr("perserveAspectRatio", "xMinYMid").append('svg:g');
                         var force = d3.layout.force();
@@ -166,8 +162,6 @@ var Pzl;
                             node.exit().remove();
                             force.on("tick", function () {
                                 link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });
-                                //node.attr("cx", function (d) { return d.x = Math.max(r, Math.min(w - r, d.x)); })
-                                //    .attr("cy", function (d) { return d.y = Math.max(r, Math.min(w - r, d.y)); });
                                 node.attr("transform", function (d) {
                                     // keep nodes inside canvas - code by mikael
                                     //var move = 50;
@@ -191,9 +185,7 @@ var Pzl;
                             //http://stackoverflow.com/questions/9901565/charge-based-on-size-d3-force-layout
                             var k = Math.sqrt(20 / (w * h));
                             // Restart the force layout.
-                            force.charge(-10 / k).gravity(30 * k).friction(0.2).linkDistance(function (d) {
-                                return d.value; /* 10*/
-                            }).size([w, h]).start();
+                            force.charge(-10 / k).gravity(30 * k).friction(0.2).linkDistance(function (d) { return d.value; }).size([w, h]).start();
                         };
                         // Make it all go
                         update();

@@ -7,6 +7,10 @@
 //ExecuteOrDelayUntilScriptLoaded(initializePage, "sp.js");
 
 module Pzl.OfficeGraph.Insight {
+    function log(message: string) {
+        jQuery("#log").prepend(message + "<br/>");
+        console.log(message);
+    }
 
     enum HighScoreType {
         CollaborationItemCount, // Actor with most items he/she's co-authoring on - # of items
@@ -133,11 +137,10 @@ module Pzl.OfficeGraph.Insight {
             super("<p>Last dude on the ball <b>{topValue}</b> times was <b>{topActor}</b>. You rank <b>#{benchmarkRank}</b> of </b>{total} with a measly <b>{compareValue}</b> save(s)");
         }
     }
-
     import MyGraph = Graph.MyGraph;
     var searchHelper = new SearchHelper(),
         graphCanvas: MyGraph,
-        edgeLength = 300,
+        edgeLength = 400,
         collabItemHighScore = new ItemCountHighScore(),
         collabActorHighScore = new ActorCountHighScore(),
         collabMinActorHightScore = new ActorLowCollaboratorHighScore(),
@@ -209,8 +212,7 @@ module Pzl.OfficeGraph.Insight {
             jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
 
         } catch (e) {
-            jQuery("#log").prepend(e);
-            console.log(e.message);
+            log(e.message);
         }
     }
 
@@ -267,11 +269,6 @@ module Pzl.OfficeGraph.Insight {
                 };
             }
         }
-    }
-
-    function log(message: string) {
-        jQuery("#log").prepend(message + "<br/>");
-        console.log(message);
     }
 
     export function hideSingleCollab(count: number) {

@@ -15,6 +15,10 @@ var Pzl;
     (function (OfficeGraph) {
         var Insight;
         (function (Insight) {
+            function log(message) {
+                jQuery("#log").prepend(message + "<br/>");
+                console.log(message);
+            }
             var HighScoreType;
             (function (HighScoreType) {
                 HighScoreType[HighScoreType["CollaborationItemCount"] = 0] = "CollaborationItemCount";
@@ -133,7 +137,7 @@ var Pzl;
                 }
                 return LastModifierHighScore;
             })(HighScoreComparison);
-            var searchHelper = new Insight.SearchHelper(), graphCanvas, edgeLength = 300, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
+            var searchHelper = new Insight.SearchHelper(), graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
             function updateStats(actor, benchMarkAgainstActor) {
                 try {
                     if (benchMarkAgainstActor)
@@ -179,8 +183,7 @@ var Pzl;
                     jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
                 }
                 catch (e) {
-                    jQuery("#log").prepend(e);
-                    console.log(e.message);
+                    log(e.message);
                 }
             }
             function updateSlider() {
@@ -233,10 +236,6 @@ var Pzl;
                         ;
                     }
                 }
-            }
-            function log(message) {
-                jQuery("#log").prepend(message + "<br/>");
-                console.log(message);
             }
             function hideSingleCollab(count) {
                 if (graphCanvas)
