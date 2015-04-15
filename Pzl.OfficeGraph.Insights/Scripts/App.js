@@ -242,10 +242,24 @@ var Pzl;
                     graphCanvas.showFilterByCount(count);
             }
             Insight.hideSingleCollab = hideSingleCollab;
-            function initializePage(reach) {
+            function resetDataAndUI() {
                 jQuery("#log").empty();
+                jQuery("#message").empty();
                 jQuery("#steplist option").remove();
                 jQuery("#maxValue").text("1");
+                collabItemHighScore = new ItemCountHighScore();
+                collabActorHighScore = new ActorCountHighScore();
+                collabMinActorHightScore = new ActorLowCollaboratorHighScore();
+                collabEgoHighScore = new EgoHighScore();
+                frequentSaverHighScore = new FrequentSaverHighScore();
+                topSaverHighScore = new TopSaverHighScore();
+                itemStarterHighScore = new ItemStarterHighScore;
+                lastModifierHighScore = new LastModifierHighScore;
+                longestItem = undefined;
+                benchmarkActor = undefined;
+            }
+            function initializePage(reach) {
+                resetDataAndUI();
                 var seenEdges = [];
                 jQuery(document).ready(function () {
                     graphCanvas = Insight.Graph.init("forceGraph");

@@ -33,6 +33,18 @@ var Pzl;
                             }
                             return count === 0;
                         };
+                        this.highlightNode = function (node, highlightClass, opacity) {
+                            for (var i = this.links.length - 1; i >= 0; i--) {
+                                var link = this.links[i];
+                                var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
+                                if (link.source.id === node.id || link.target.id === node.id) {
+                                    d3.select(id).transition().style("opacity", 1).attr("class", highlightClass);
+                                }
+                                else {
+                                    d3.select(id).transition().style("opacity", opacity).attr("class", "link");
+                                }
+                            }
+                        };
                         this.showFilterByCount = function (hideCount) {
                             var animDuration = 250;
                             for (var i = this.links.length - 1; i >= 0; i--) {
@@ -41,10 +53,10 @@ var Pzl;
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                                 if (link.count <= hideCount) {
                                     //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
-                                    d3.selectAll(id).transition().duration(animDuration).style("opacity", 0);
+                                    d3.select(id).transition().duration(animDuration).style("opacity", 0);
                                 }
                                 else {
-                                    d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
+                                    d3.select(id).transition().duration(animDuration).style("opacity", 1);
                                 }
                             }
                             for (var j = 0; j < this.nodes.length; j++) {
@@ -52,12 +64,12 @@ var Pzl;
                                 var selectorNode = "#Node" + this.validCssName(node.id);
                                 var selectorText = "#NodeText" + this.validCssName(node.id);
                                 if (this.isSingleNode(node.id, hideCount)) {
-                                    d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
-                                    d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
+                                    d3.select(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
+                                    d3.select(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
                                 }
                                 else {
-                                    d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
-                                    d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
+                                    d3.select(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
+                                    d3.select(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
                                 }
                             }
                             update();
@@ -127,7 +139,9 @@ var Pzl;
                                     break;
                                 }
                             }
-                            //console.log(source + ":" + target + ":" + value);
+                            if ((target.indexOf("Elsa") !== -1 || source.indexOf("Elsa") !== -1) && (target.indexOf("Tormod") !== -1 || source.indexOf("Tormod") !== -1)) {
+                                console.log(found + ":" + source + ":" + target + ":" + value);
+                            }
                             if (!found) {
                                 _this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });
                             }
@@ -140,6 +154,12 @@ var Pzl;
                             }
                             return null;
                         };
+                        // rescale g
+                        function rescale() {
+                            var trans = d3.event.translate;
+                            var scale = d3.event.scale;
+                            vis.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
+                        }
                         var w = jQuery("#" + domId).width();
                         var h = jQuery("#" + domId).height();
                         var r = 16;
@@ -151,15 +171,26 @@ var Pzl;
                         var fadeinTime = 500;
                         var update = function () {
                             var link = vis.selectAll("line").data(_this.links, function (d) { return (d.source.id + "-" + d.target.id); });
-                            link.enter().append("line").attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); }).attr("stroke-width", function (d) { return (d.value / 10); }).attr("class", "link").transition().duration(fadeinTime).style("opacity", 1);
+                            link.enter().append("line").attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); }).attr("stroke-width", function (d) { return (d.value / 10); }).attr("class", "link linkHidden").transition().duration(fadeinTime).style("opacity", 1);
                             //d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
                             link.append("title").text(function (d) { return d.value; });
                             link.exit().remove();
                             var node = vis.selectAll("g.node").data(_this.nodes, function (d) { return d.id; });
                             var nodeEnter = node.enter().append("g").attr("class", "node").call(force.drag);
                             nodeEnter.append("svg:circle").attr("r", r).attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); }).attr("class", "nodeStrokeClass").attr("fill", function (d) { return color(d.id); }).transition().duration(fadeinTime).style("opacity", 1);
-                            nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 14).attr("y", ".31em").transition().duration(fadeinTime).style("opacity", 1).text(function (d) { return d.id; });
+                            nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 18).attr("y", ".31em").transition().duration(fadeinTime).style("opacity", 1).text(function (d) { return d.id; });
                             node.exit().remove();
+                            node.on("mousedown", function (d) {
+                                _this.highlightNode(d, "linkHightLight", .2);
+                                //jQuery("#lala").css({ top: (d.y + 20), left: (d.x + 40) }).show();
+                                //put actor image + data
+                            }).on("mouseup", function (d) {
+                                //jQuery("#lala").hide();
+                                _this.highlightNode(d, "link", 1);
+                            }).on("mouseout", function (d) {
+                                //jQuery("#lala").hide();
+                                _this.highlightNode(d, "link", 1);
+                            });
                             force.on("tick", function () {
                                 link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });
                                 node.attr("transform", function (d) {

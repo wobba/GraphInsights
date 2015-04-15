@@ -193,18 +193,6 @@ module Pzl.OfficeGraph.Insight {
                     actor.collabItems = items;
                     deferred.resolve(actor);
                 });
-                //Q.all<any>([
-                //    //this.loadColleagues(actor).then(colleagues => {
-                //    //    actor.associates = colleagues;
-                //    //}),
-                //    //this.loadModifiedItemsForActor(actor).then(items => {
-                //    //    actor.items = items;
-                //    //}),
-                //    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                //        actor.collabItems = items;
-                //        deferred.resolve(actor);
-                //    })
-                //]);
             });
 
             return deferred.promise;

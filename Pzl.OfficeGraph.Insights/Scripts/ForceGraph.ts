@@ -24,6 +24,8 @@ module Pzl.OfficeGraph.Insight.Graph {
         validCssName;
         addNode;
         getLinks;
+        highlightNode;
+        resetNode;
         links;
         nodes;
         maxCount; // max number of collabs
@@ -39,7 +41,6 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return -1;
             };
 
-
             var reCssPattern = /[^a-zA-Z0-9]/g;
             this.validCssName = (name: string) => name.replace(reCssPattern, "");
 
@@ -54,6 +55,20 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return count === 0;
             };
 
+            this.highlightNode = function (node, highlightClass: string, opacity: number) {
+                for (var i = this.links.length - 1; i >= 0; i--) {
+                    var link = this.links[i];
+                    var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
+                    if (link.source.id === node.id || link.target.id === node.id) {
+                        d3.select(id).transition().style("opacity", 1)
+                            .attr("class", highlightClass);
+                    } else {
+                        d3.select(id).transition().style("opacity", opacity)
+                            .attr("class", "link");
+                    }
+                }
+            };
+
             this.showFilterByCount = function (hideCount) {
                 var animDuration = 250;
                 for (var i = this.links.length - 1; i >= 0; i--) {
@@ -62,9 +77,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                     var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                     if (link.count <= hideCount) {
                         //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
-                        d3.selectAll(id).transition().duration(animDuration).style("opacity", 0);
+                        d3.select(id).transition().duration(animDuration).style("opacity", 0);
                     } else {
-                        d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
+                        d3.select(id).transition().duration(animDuration).style("opacity", 1);
                     }
                 }
 
@@ -73,11 +88,11 @@ module Pzl.OfficeGraph.Insight.Graph {
                     var selectorNode = "#Node" + this.validCssName(node.id);
                     var selectorText = "#NodeText" + this.validCssName(node.id);
                     if (this.isSingleNode(node.id, hideCount)) {
-                        d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
-                        d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
+                        d3.select(selectorNode).transition().duration(animDuration).style("opacity", 0); // hide links
+                        d3.select(selectorText).transition().duration(animDuration).style("opacity", 0); // hide label
                     } else {
-                        d3.selectAll(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
-                        d3.selectAll(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
+                        d3.select(selectorNode).transition().duration(animDuration).style("opacity", 1); // show label
+                        d3.select(selectorText).transition().duration(animDuration).style("opacity", 1); // show label
                     }
                 }
                 update();
@@ -157,7 +172,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                         break;
                     }
                 }
-                //console.log(source + ":" + target + ":" + value);
+                if ((target.indexOf("Elsa") !== -1 || source.indexOf("Elsa") !== -1) && (target.indexOf("Tormod") !== -1 || source.indexOf("Tormod") !== -1)) {
+                    console.log(found + ":" + source + ":" + target + ":" + value);
+                }
                 if (!found) {
                     this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });
                 }
@@ -169,6 +186,16 @@ module Pzl.OfficeGraph.Insight.Graph {
                     if (this.nodes[i]["id"] === id) return this.nodes[i];
                 }
                 return null;
+            }
+
+            // rescale g
+            function rescale() {
+                var trans = d3.event.translate;
+                var scale = d3.event.scale;
+
+                vis.attr("transform",
+                    "translate(" + trans + ")"
+                    + " scale(" + scale + ")");
             }
 
             var w = jQuery("#" + domId).width();
@@ -185,7 +212,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                 .attr("pointer-events", "all")
                 .attr("viewBox", "0 0 " + w + " " + h)
                 .attr("perserveAspectRatio", "xMinYMid")
-                .append('svg:g');
+                .append('svg:g')
+                //.call(d3.behavior.zoom().on("zoom", rescale))
+                ;
 
             var force = d3.layout.force();
 
@@ -201,7 +230,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 link.enter().append("line")
                     .attr("id", d => (this.validCssName(d.source.id + "-" + d.target.id)))
                     .attr("stroke-width", d => (d.value / 10))
-                    .attr("class", "link")
+                    .attr("class", "link linkHidden")
                     .transition().duration(fadeinTime).style("opacity", 1);
 
                 //d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
@@ -226,12 +255,25 @@ module Pzl.OfficeGraph.Insight.Graph {
                 nodeEnter.append("svg:text")
                     .attr("class", "textClass")
                     .attr("id", d => ("NodeText" + this.validCssName(d.id)))
-                    .attr("x", 14)
+                    .attr("x", 18)
                     .attr("y", ".31em")
                     .transition().duration(fadeinTime).style("opacity", 1)
                     .text(d => d.id);
 
                 node.exit().remove();
+
+                node.on("mousedown", d => {
+                    this.highlightNode(d, "linkHightLight", .2);
+                    //jQuery("#lala").css({ top: (d.y + 20), left: (d.x + 40) }).show();
+                    //put actor image + data
+                })
+                .on("mouseup", d => {
+                    //jQuery("#lala").hide();
+                    this.highlightNode(d, "link", 1);
+                }).on("mouseout", d => {
+                    //jQuery("#lala").hide();
+                    this.highlightNode(d, "link", 1);
+                });
 
                 force.on("tick",() => {
                     link.attr("x1", d => d.source.x)

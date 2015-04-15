@@ -44,7 +44,7 @@
 
 <%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
-    <h2>All stats presented in revolves around how people work together on items, seen from <b>your</b> point of view.
+    <h2>All stats presented revolves around how people work together on items, seen from <b>your</b> point of view.
         <br />
         If there are clusters of documents you don't have access to they will not show up. Go poke an eye!</h2>
     <hr />
@@ -75,11 +75,12 @@
             <div id="message"></div>
         </div>
         <div class="graphArea">
-            <div id="forceGraph"></div>
+            <div id="forceGraph">
+                <div id="lala" style="border: solid 1px #555; display: none; position: absolute; width: 200px; height: 200px;background-color: white"></div>
+            </div>
         </div>
     </div>
     <marquee id="log"  behavior="scroll" direction="up" loop="1"></marquee>
 <%--    <div id="log">
     </div>--%>
-
 </asp:Content>

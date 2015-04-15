@@ -64,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -90,7 +90,7 @@ var Pzl;
                         console.log("Using backup associates");
                         actor.associates = this.backupActorAssociates;
                     }
-                    var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
+                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
                     var parts = [];
                     parts.push(template.replace("#ID#", actor.id.toString()));
                     for (var j = 0; j < actor.associates.length; j++) {
@@ -99,7 +99,7 @@ var Pzl;
                     if (parts.length === 1) {
                         parts.push(parts[0]); // fix to not fail or query
                     }
-                    var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
+                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
                     this.postJson(searchPayload, function (data) {
                         var items = [];
@@ -177,18 +177,6 @@ var Pzl;
                             actor.collabItems = items;
                             deferred.resolve(actor);
                         });
-                        //Q.all<any>([
-                        //    //this.loadColleagues(actor).then(colleagues => {
-                        //    //    actor.associates = colleagues;
-                        //    //}),
-                        //    //this.loadModifiedItemsForActor(actor).then(items => {
-                        //    //    actor.items = items;
-                        //    //}),
-                        //    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                        //        actor.collabItems = items;
-                        //        deferred.resolve(actor);
-                        //    })
-                        //]);
                     });
                     return deferred.promise;
                 };

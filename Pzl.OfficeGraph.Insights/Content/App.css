@@ -1,7 +1,16 @@
 ﻿.link {
     stroke: #aaa;
     stroke-width: 2px;
-    opacity: 0;
+    /*opacity: 0;*/
+}
+
+.linkHidden {    
+    opacity: 0;    
+}
+
+.linkHightLight {
+    stroke: red;
+    stroke-width: 2px;
 }
 
 .node {

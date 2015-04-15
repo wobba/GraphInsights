@@ -275,10 +275,26 @@ module Pzl.OfficeGraph.Insight {
         if (graphCanvas) graphCanvas.showFilterByCount(count);
     }
 
-    export function initializePage(reach: number) {
+    function resetDataAndUI() {
         jQuery("#log").empty();
+        jQuery("#message").empty();
         jQuery("#steplist option").remove();
         jQuery("#maxValue").text("1");
+
+        collabItemHighScore = new ItemCountHighScore();
+        collabActorHighScore = new ActorCountHighScore();
+        collabMinActorHightScore = new ActorLowCollaboratorHighScore();
+        collabEgoHighScore = new EgoHighScore();
+        frequentSaverHighScore = new FrequentSaverHighScore();
+        topSaverHighScore = new TopSaverHighScore();
+        itemStarterHighScore = new ItemStarterHighScore;
+        lastModifierHighScore = new LastModifierHighScore;
+        longestItem = undefined;
+        benchmarkActor = undefined;
+    }
+
+    export function initializePage(reach: number) {
+        resetDataAndUI();
         var seenEdges: Edge[] = [];
         jQuery(document).ready(() => {
             graphCanvas = Graph.init("forceGraph");
