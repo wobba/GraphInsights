@@ -127,9 +127,10 @@ var Pzl;
                                 // links are the same if source/target are the same
                                 if ((_this.links[i].source.id === source && _this.links[i].target.id === target) || (_this.links[i].source.id === target && _this.links[i].target.id === source)) {
                                     found = true;
+                                    //console.log("Existing link: " + source+ ":" +target);
                                     _this.links[i].count += 1; // keep track of number of collabs between actors
                                     // existing link - shorten to show closeness
-                                    if (_this.links[i].value > 50) {
+                                    if (_this.links[i].value > 100) {
                                         _this.links[i].value = _this.links[i].value / 2;
                                     }
                                     if (_this.links[i].count > _this.maxCountB) {
@@ -138,9 +139,6 @@ var Pzl;
                                     value = _this.links[i].value;
                                     break;
                                 }
-                            }
-                            if ((target.indexOf("Elsa") !== -1 || source.indexOf("Elsa") !== -1) && (target.indexOf("Tormod") !== -1 || source.indexOf("Tormod") !== -1)) {
-                                console.log(found + ":" + source + ":" + target + ":" + value);
                             }
                             if (!found) {
                                 _this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });

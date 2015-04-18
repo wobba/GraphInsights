@@ -10,7 +10,7 @@ var Pzl;
         (function (Insight) {
             var SearchHelper = (function () {
                 function SearchHelper() {
-                    this.backupActorAssociates = [];
+                    this.allReachedActors = new Hashtable();
                 }
                 SearchHelper.prototype.postJson = function (payload, success, failure) {
                     var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
@@ -64,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -85,21 +85,17 @@ var Pzl;
                 SearchHelper.prototype.loadCollabModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    if (actor.associates.length === 0) {
-                        // if no associates replace with backup actors
-                        console.log("Using backup associates");
-                        actor.associates = this.backupActorAssociates;
-                    }
-                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
+                    var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
                     var parts = [];
                     parts.push(template.replace("#ID#", actor.id.toString()));
-                    for (var j = 0; j < actor.associates.length; j++) {
-                        parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+                    var actorIds = this.allReachedActors.keys();
+                    for (var i = 0; i < actorIds.length; i++) {
+                        parts.push(template.replace("#ID#", actorIds[i].toString()));
                     }
                     if (parts.length === 1) {
                         parts.push(parts[0]); // fix to not fail or query
                     }
-                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
+                    var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
                     this.postJson(searchPayload, function (data) {
                         var items = [];
@@ -128,8 +124,8 @@ var Pzl;
                             var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
                             for (var i = 0; i < resultsCount; i++) {
                                 var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
-                                var actor = _this.parseActorResults(row);
-                                actors.push(actor);
+                                var newActor = _this.parseActorResults(row);
+                                actors.push(newActor);
                             }
                         }
                         deferred.resolve(actors);
@@ -142,44 +138,22 @@ var Pzl;
                 SearchHelper.prototype.loadAllOfMe = function (reach) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var actor;
                     this.loadMe().then(function (me) {
-                        actor = me;
+                        _this.mainActor = me;
                         return _this.loadColleagues(me, reach);
                     }).then(function (colleagues) {
-                        actor.associates = colleagues;
-                        if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
-                            _this.backupActorAssociates = colleagues;
-                        }
-                        _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
-                            actor.collabItems = items;
-                            deferred.resolve(actor);
-                        });
-                        //Q.all<any>([
-                        //    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                        //        actor.collabItems = items;
-                        //    })
-                        //]).done(() => {
-                        //    deferred.resolve(actor);
-                        //});
+                        deferred.resolve(colleagues);
                     });
                     return deferred.promise;
                 };
-                SearchHelper.prototype.populateActor = function (actor, reach) {
-                    var _this = this;
-                    var deferred = Q.defer();
-                    this.loadColleagues(actor, reach).then(function (colleagues) {
-                        actor.associates = colleagues;
-                        if (_this.backupActorAssociates.length === 0 || colleagues.length > _this.backupActorAssociates.length) {
-                            _this.backupActorAssociates = colleagues;
-                        }
-                        _this.loadCollabModifiedItemsForActor(actor).then(function (items) {
-                            actor.collabItems = items;
-                            deferred.resolve(actor);
-                        });
-                    });
-                    return deferred.promise;
-                };
+                //populateActor(actor: Actor, reach: number): Q.Promise<Actor[]> {
+                //    var deferred = Q.defer<Actor[]>();
+                //    this.loadColleagues(actor, reach)
+                //        .then(colleagues => {
+                //        deferred.resolve(colleagues);
+                //    });
+                //    return deferred.promise;
+                //}
                 SearchHelper.prototype.getPayload = function (query, graphQuery) {
                     return {
                         "request": {

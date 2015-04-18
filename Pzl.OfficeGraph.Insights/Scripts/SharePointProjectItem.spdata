@@ -37,5 +37,7 @@
     <ProjectItemFile Source="ForceGraph.ts" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="ForceGraph.js" Target="Scripts\" Type="ElementFile" />
     <ProjectItemFile Source="ForceGraph.js.map" Target="Scripts\" Type="ElementFile" />
+    <ProjectItemFile Source="typings\hashtable\hashtable.d.ts" Target="Scripts\typings\hashtable\" Type="ElementFile" />
+    <ProjectItemFile Source="jshashtable-3.0.js" Target="Scripts\" Type="ElementFile" />
   </Files>
 </ProjectItem>

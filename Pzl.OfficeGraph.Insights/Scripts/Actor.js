@@ -14,7 +14,7 @@ var Pzl;
                 Actor.prototype.getItemModificationsAverage = function () {
                     var count = 0;
                     for (var i = 0; i < this.collabItems.length; i++) {
-                        count = count + this.collabItems[i].getNumberOfEditsByActor(this, 0 /* ActorOnly */);
+                        count = count + this.collabItems[i].getNumberOfEditsByActor(this, Insight.Inclusion.ActorOnly);
                     }
                     if (count === 0)
                         return 0;
@@ -136,17 +136,6 @@ var Pzl;
                     }
                     return count;
                 };
-                Actor.prototype.getAssociateNameById = function (actorId) {
-                    if (actorId === this.id) {
-                        return this.name;
-                    }
-                    for (var i = 0; i < this.associates.length; i++) {
-                        if (this.associates[i].id === actorId) {
-                            return this.associates[i].name;
-                        }
-                    }
-                    return actorId.toString();
-                };
                 return Actor;
             })();
             Insight.Actor = Actor;
@@ -156,6 +145,15 @@ var Pzl;
                 return Edge;
             })();
             Insight.Edge = Edge;
+            var GraphedEdge = (function () {
+                function GraphedEdge(actorId1, actorId2, workId) {
+                    this.actorId1 = actorId1;
+                    this.actorId2 = actorId2;
+                    this.workId = workId;
+                }
+                return GraphedEdge;
+            })();
+            Insight.GraphedEdge = GraphedEdge;
             (function (Gender) {
                 Gender[Gender["Male"] = 0] = "Male";
                 Gender[Gender["Female"] = 1] = "Female";

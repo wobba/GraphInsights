@@ -1,6 +1,8 @@
 ﻿///<reference path="typings/sharepoint/SharePoint.d.ts" /> 
 ///<reference path="typings/jquery/jquery.d.ts" /> 
 ///<reference path="typings/d3/d3.d.ts" /> 
+///<reference path="typings/hashtable/hashtable.d.ts" /> 
+
 
 'use strict';
 
@@ -36,10 +38,11 @@ module Pzl.OfficeGraph.Insight {
     class HighScoreComparison {
         constructor(template: string) {
             this.template = template;
+            this.rankValues = [];
         }
 
         rankType: HighScoreType;
-        rankValues: HighScoreEntry[] = [];
+        rankValues: HighScoreEntry[];
         template: string; // {benchmarkRank} {compareValue} {topActor} {topValue} 
 
         getMetricString(benchMarkActor: Actor): string {
@@ -47,7 +50,9 @@ module Pzl.OfficeGraph.Insight {
             this.rankValues.sort((a, b) => { return b.value - a.value; });
             var topEntry = this.rankValues[0];
             var compareActor = benchMarkActor;
-            var compareEntry = this.rankValues.filter(item => (item.actor.id === compareActor.id))[0];
+            var compareItems = this.rankValues.filter(item => (item.actor.id === compareActor.id));
+            if (compareItems.length === 0) return "";
+            var compareEntry = compareItems[0];
             var index = this.rankValues.indexOf(compareEntry) + 1;
 
             return this.template
@@ -87,7 +92,9 @@ module Pzl.OfficeGraph.Insight {
 
             var topEntry = this.rankValues[0];
             var compareActor = benchMarkActor;
-            var compareEntry = this.rankValues.filter(item => (item.actor.id === compareActor.id))[0];
+            var compareItems = this.rankValues.filter(item => (item.actor.id === compareActor.id));
+            if (compareItems.length === 0) return "";
+            var compareEntry = compareItems[0];
             var index = this.rankValues.indexOf(compareEntry) + 1;
 
             return this.template
@@ -138,8 +145,8 @@ module Pzl.OfficeGraph.Insight {
         }
     }
     import MyGraph = Graph.MyGraph;
-    var searchHelper = new SearchHelper(),
-        graphCanvas: MyGraph,
+    export var searchHelper = new SearchHelper();
+    var graphCanvas: MyGraph,
         edgeLength = 400,
         collabItemHighScore = new ItemCountHighScore(),
         collabActorHighScore = new ActorCountHighScore(),
@@ -156,6 +163,7 @@ module Pzl.OfficeGraph.Insight {
         try {
 
             if (benchMarkAgainstActor) benchmarkActor = actor;
+            if (!actor.collabItems) return;
 
             var currentCollabItemCount = actor.getCollaborationItemCount();
             var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
@@ -231,40 +239,62 @@ module Pzl.OfficeGraph.Insight {
         }
     }
 
-    function addNodeAndLink(src, dest, timeout) {
+    function addNodeAndLink(src: string, dest: string, timeout: number) {
         if (src === dest) return;
-        setTimeout(
-            () => {
-                graphCanvas.addNode(src);
-                graphCanvas.addNode(dest);
-                graphCanvas.addLink(src, dest, edgeLength);
-                Graph.keepNodesOnTop();
-                updateSlider();
-            }, timeout);
+        Q.delay(timeout).done(() => {
+            graphCanvas.addNode(src);
+            graphCanvas.addNode(dest);
+            graphCanvas.addLink(src, dest, edgeLength);
+            Graph.keepNodesOnTop();
+            updateSlider();
+        });
     }
 
-    function hasEdge(seenEdges: Edge[], edge: Edge) {
+    var seenEdges: GraphedEdge[] = [];
+    function hasEdge(edge: Edge, actor: Actor) {
+        var n1 = edge.actorId;
+        var n2 = actor.id;
+        if (n2 < n1) {
+            var n3 = n1;
+            n1 = n2;
+            n2 = n3;
+        }
+
+
         for (var i = 0; i < seenEdges.length; i++) {
-            if (seenEdges[i].workid === edge.workid && seenEdges[i].actorId === edge.actorId) {
+            if (seenEdges[i].workId === edge.workid && seenEdges[i].actorId1 === n1 && seenEdges[i].actorId2 === n2) {
                 return true;
             }
         }
-        seenEdges.push(edge);
+        var ge = new GraphedEdge(n1, n2, edge.workid);
+        seenEdges.push(ge);
         return false;
     }
 
-    function graphEdges(actor: Actor, seenEdges: Edge[]) {
+    function getAssociateNameById(actorId: number): string {
+        var vals = searchHelper.allReachedActors.values();
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].id === actorId) {
+                return vals[i].name;
+            }
+        }
+        return actorId.toString();
+    }
+
+
+    function graphEdges(actor: Actor) {
+        console.log("Graphing for: " + actor.name);
         var pause = 0;
         for (var i = 0; i < actor.collabItems.length; i++) {
             var item = actor.collabItems[i];
             if (item.getNumberOfContributors() > 1) {
                 pause++;
                 for (var edgeCount = 0; edgeCount < item.rawEdges.length; edgeCount++) {
-                    if (hasEdge(seenEdges, item.rawEdges[edgeCount])) {
-                        //console.log("edge seen");
+                    if (hasEdge(item.rawEdges[edgeCount], actor)) {
+                        console.log("edge seen");
                         continue;
                     }
-                    var name = actor.getAssociateNameById(item.rawEdges[edgeCount].actorId);
+                    var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
                     addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
                 };
             }
@@ -281,6 +311,9 @@ module Pzl.OfficeGraph.Insight {
         jQuery("#steplist option").remove();
         jQuery("#maxValue").text("1");
 
+        searchHelper.allReachedActors.clear();
+        seenEdges = [];
+
         collabItemHighScore = new ItemCountHighScore();
         collabActorHighScore = new ActorCountHighScore();
         collabMinActorHightScore = new ActorLowCollaboratorHighScore();
@@ -293,51 +326,84 @@ module Pzl.OfficeGraph.Insight {
         benchmarkActor = undefined;
     }
 
+    function loadColleaguesFor(count: number, total: number, associateActor: Actor, reach: number) {
+        var deferred = Q.defer<boolean>();
+        Q.delay(500 * count).done(() => {
+            log("Loading actors for " + associateActor.name);
+            searchHelper.loadColleagues(associateActor, reach).then(actors => {
+                for (var j = 0; j < actors.length; j++) {
+                    if (!searchHelper.allReachedActors.containsKey(actors[j].id)) {
+                        searchHelper.allReachedActors.put(actors[j].id, actors[j]);
+                    }
+                }
+                log("Actor actual reach: " + searchHelper.allReachedActors.size());
+                if (count === total - 1) {
+                    log("Done");
+                    deferred.resolve(true); // loaded all actors
+                } else {
+                    deferred.resolve(false);
+                }
+            });
+        });
+        return deferred.promise;
+    }
+
+    function loadEdgesForAll() {
+        //var deferred = Q.defer<boolean>();
+        var count = 0;
+        searchHelper.allReachedActors.each((actorId, actor) => {
+            Q.delay(count * 500).done(() => {
+                searchHelper.loadCollabModifiedItemsForActor(actor).then(items => {
+                    actor.collabItems = items;
+                    console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
+                    graphEdges(actor);
+                    updateStats(actor, false);
+                });
+            });
+            count++;
+        });
+        log("All processed!");
+        //deferred.promise;
+    }
+
     export function initializePage(reach: number) {
         resetDataAndUI();
-        var seenEdges: Edge[] = [];
         jQuery(document).ready(() => {
             graphCanvas = Graph.init("forceGraph");
 
             SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor",() => {
-                var runfunc;
-                if (!selectedActor) {
+                var runfunc: Q.IPromise<Actor[]>;
+                if (!peoplePickerActor) {
                     runfunc = searchHelper.loadAllOfMe(reach);
                 } else {
-                    runfunc = searchHelper.populateActor(selectedActor, reach);
+                    searchHelper.mainActor = peoplePickerActor;
+                    runfunc = searchHelper.loadColleagues(peoplePickerActor, reach);
                 }
 
-                runfunc.delay(1000).done(me => {
-                    log("Processing edges for " + me.name);
-                    log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
+                runfunc.then(associates => {
+                    updateStats(searchHelper.mainActor, true);
 
-                    updateStats(me, true);
+                    searchHelper.allReachedActors.put(searchHelper.mainActor.id, searchHelper.mainActor);
+                    for (var i = 0; i < associates.length; i++) {
+                        var associate = associates[i];
+                        if (!searchHelper.allReachedActors.containsKey(associate.id)) {
+                            searchHelper.allReachedActors.put(associate.id, associate);
+                        }
 
-                    graphEdges(me, seenEdges);
-
-                    for (var i = 0; i < me.associates.length; i++) {
-                        var c = me.associates[i];
-                        log("Processing edges for " + c.name);
-                        if (c.name === me.name) {
+                        if (associate.id === searchHelper.mainActor.id) {
                             continue;
                         }
-                        searchHelper.populateActor(c, reach).delay(500 * i).done(c => {
-                            if (c.collabItems.length === 0) {
-                                log("No collaborative edges found for " + c.name);
-                                return;
+
+                        loadColleaguesFor(i, associates.length, associate, reach).done(isLastActor => {
+                            if (isLastActor) {
+                                loadEdgesForAll();
                             }
-
-                            graphEdges(c, seenEdges);
-
-                            log(c.name + "(" + c.id + ")" + " has " + c.associates.length + " associates and " + c.collabItems.length + " items");
-
-                            updateStats(c, false);
                         });
                     }
                 });
+
             });
         });
-
     }
 
     SP.SOD.executeFunc("sp.js", null,() => {
@@ -357,7 +423,7 @@ interface IPickerWrapper {
 
 declare var SPClientPeoplePicker_InitStandaloneControlWrapper: IPickerWrapper;
 
-var selectedActor: Pzl.OfficeGraph.Insight.Actor = null;
+var peoplePickerActor: Pzl.OfficeGraph.Insight.Actor = null;
 
 //Load the people picker
 function loadPeoplePicker(peoplePickerElementId) {
@@ -375,10 +441,10 @@ function loadPeoplePicker(peoplePickerElementId) {
                 var query = "accountname:" + person.AutoFillKey;
                 var helper = new Pzl.OfficeGraph.Insight.SearchHelper();
                 helper.loadActorsByQuery(query).done(actors => {
-                    selectedActor = actors[0];
+                    peoplePickerActor = actors[0];
                 });
             } else {
-                selectedActor = undefined;
+                peoplePickerActor = undefined;
             }
         };
 
@@ -387,6 +453,6 @@ function loadPeoplePicker(peoplePickerElementId) {
                 SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);
             });
         });
-    }
+    };
     EnsurePeoplePickerRefinementInit();
 }

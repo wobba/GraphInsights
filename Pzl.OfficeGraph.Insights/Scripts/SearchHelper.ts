@@ -6,7 +6,8 @@
 module Pzl.OfficeGraph.Insight {
 
     export class SearchHelper {
-        backupActorAssociates: Actor[] = [];
+        allReachedActors = new Hashtable<number, Actor>();
+        mainActor : Actor;
 
         private postJson(payload, success, failure) {
             var searchUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/search/postquery";
@@ -88,16 +89,15 @@ module Pzl.OfficeGraph.Insight {
 
         loadCollabModifiedItemsForActor(actor: Actor): Q.IPromise<Item[]> {
             var deferred = Q.defer<Item[]>();
-            if (actor.associates.length === 0) {
-                // if no associates replace with backup actors
-                console.log("Using backup associates");
-                actor.associates = this.backupActorAssociates;
-            }
+
             var template = "actor(#ID#,action:" + Action.Modified + ")";
             var parts = [];
             parts.push(template.replace("#ID#", actor.id.toString()));
-            for (var j = 0; j < actor.associates.length; j++) {
-                parts.push(template.replace("#ID#", actor.associates[j].id.toString()));
+
+            var actorIds = this.allReachedActors.keys(); 
+
+            for (var i = 0; i < actorIds.length; i++) {
+                parts.push(template.replace("#ID#", actorIds[i].toString()));
             }
             if (parts.length === 1) {
                 parts.push(parts[0]); // fix to not fail or query
@@ -138,8 +138,8 @@ module Pzl.OfficeGraph.Insight {
                     var resultsCount = data.PrimaryQueryResult.RelevantResults.RowCount;
                     for (var i = 0; i < resultsCount; i++) {
                         var row = data.PrimaryQueryResult.RelevantResults.Table.Rows[i];
-                        var actor = this.parseActorResults(row);
-                        actors.push(actor);
+                        var newActor = this.parseActorResults(row);
+                        actors.push(newActor);
                     }
                 }
                 deferred.resolve(actors);
@@ -151,52 +151,30 @@ module Pzl.OfficeGraph.Insight {
             return deferred.promise;
         }
 
-        loadAllOfMe(reach: number): Q.Promise<Actor> {
-            var deferred = Q.defer<Actor>();
-            var actor: Actor;
+        loadAllOfMe(reach: number): Q.Promise<Actor[]> {
+            var deferred = Q.defer<Actor[]>();
 
             this.loadMe()
                 .then(me => {
-                actor = me;
+                this.mainActor = me;
                 return this.loadColleagues(me, reach);
             }).then(colleagues => {
-                actor.associates = colleagues;
-                if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
-                    this.backupActorAssociates = colleagues;
-                }
-                this.loadCollabModifiedItemsForActor(actor).then(items => {
-                    actor.collabItems = items;
-                    deferred.resolve(actor);
-                });
-                //Q.all<any>([
-                //    this.loadCollabModifiedItemsForActor(actor).then(items => {
-                //        actor.collabItems = items;
-                //    })
-                //]).done(() => {
-                //    deferred.resolve(actor);
-                //});
+                deferred.resolve(colleagues);
             });
 
             return deferred.promise;
         }
 
-        populateActor(actor: Actor, reach: number): Q.Promise<Actor> {
-            var deferred = Q.defer<Actor>();
+        //populateActor(actor: Actor, reach: number): Q.Promise<Actor[]> {
+        //    var deferred = Q.defer<Actor[]>();
 
-            this.loadColleagues(actor, reach)
-                .then(colleagues => {
-                actor.associates = colleagues;
-                if (this.backupActorAssociates.length === 0 || colleagues.length > this.backupActorAssociates.length) {
-                    this.backupActorAssociates = colleagues;
-                }
-                this.loadCollabModifiedItemsForActor(actor).then(items => {
-                    actor.collabItems = items;
-                    deferred.resolve(actor);
-                });
-            });
+        //    this.loadColleagues(actor, reach)
+        //        .then(colleagues => {
+        //        deferred.resolve(colleagues);
+        //    });
 
-            return deferred.promise;
-        }
+        //    return deferred.promise;
+        //}
 
         private getPayload(query: string, graphQuery: string) {
             return {

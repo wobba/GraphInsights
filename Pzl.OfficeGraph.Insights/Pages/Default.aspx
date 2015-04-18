@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../Scripts/moment.js"></script>
     <script type="text/javascript" src="../Scripts/q.js"></script>
     <script type="text/javascript" src="../Scripts/d3/d3.min.js"></script>
+    <script type="text/javascript" src="../Scripts/jshashtable-3.0.js"></script>
 
     <script type="text/javascript" src="../Scripts/Actor.js"></script>
     <script type="text/javascript" src="../Scripts/SearchHelper.js"></script>
@@ -80,7 +81,6 @@
             </div>
         </div>
     </div>
-    <marquee id="log"  behavior="scroll" direction="up" loop="1"></marquee>
-<%--    <div id="log">
-    </div>--%>
+    <div id="log">
+    </div>
 </asp:Content>

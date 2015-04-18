@@ -1,6 +1,7 @@
 ///<reference path="typings/sharepoint/SharePoint.d.ts" /> 
 ///<reference path="typings/jquery/jquery.d.ts" /> 
 ///<reference path="typings/d3/d3.d.ts" /> 
+///<reference path="typings/hashtable/hashtable.d.ts" /> 
 'use strict';
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39,8 +40,8 @@ var Pzl;
             })();
             var HighScoreComparison = (function () {
                 function HighScoreComparison(template) {
-                    this.rankValues = [];
                     this.template = template;
+                    this.rankValues = [];
                 }
                 HighScoreComparison.prototype.getMetricString = function (benchMarkActor) {
                     if (this.rankValues.length === 0)
@@ -50,7 +51,10 @@ var Pzl;
                     });
                     var topEntry = this.rankValues[0];
                     var compareActor = benchMarkActor;
-                    var compareEntry = this.rankValues.filter(function (item) { return (item.actor.id === compareActor.id); })[0];
+                    var compareItems = this.rankValues.filter(function (item) { return (item.actor.id === compareActor.id); });
+                    if (compareItems.length === 0)
+                        return "";
+                    var compareEntry = compareItems[0];
                     var index = this.rankValues.indexOf(compareEntry) + 1;
                     return this.template.replace("{topActor}", topEntry.actor.name).replace("{topValue}", topEntry.value.toString()).replace("{benchmarkRank}", index.toString()).replace("{total}", this.rankValues.length.toString()).replace("{compareValue}", compareEntry.value.toString());
                 };
@@ -90,7 +94,10 @@ var Pzl;
                     }
                     var topEntry = this.rankValues[0];
                     var compareActor = benchMarkActor;
-                    var compareEntry = this.rankValues.filter(function (item) { return (item.actor.id === compareActor.id); })[0];
+                    var compareItems = this.rankValues.filter(function (item) { return (item.actor.id === compareActor.id); });
+                    if (compareItems.length === 0)
+                        return "";
+                    var compareEntry = compareItems[0];
                     var index = this.rankValues.indexOf(compareEntry) + 1;
                     return this.template.replace("{topActor}", topEntry.actor.name).replace("{topValue}", topEntry.value.toString()).replace("{benchmarkRank}", index.toString()).replace("{total}", this.rankValues.length.toString()).replace("{compareValue}", compareEntry.value.toString());
                 };
@@ -137,11 +144,14 @@ var Pzl;
                 }
                 return LastModifierHighScore;
             })(HighScoreComparison);
-            var searchHelper = new Insight.SearchHelper(), graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
+            Insight.searchHelper = new Insight.SearchHelper();
+            var graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
             function updateStats(actor, benchMarkAgainstActor) {
                 try {
                     if (benchMarkAgainstActor)
                         benchmarkActor = actor;
+                    if (!actor.collabItems)
+                        return;
                     var currentCollabItemCount = actor.getCollaborationItemCount();
                     var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
                     collabItemHighScore.rankValues.push(collabItemEntry);
@@ -203,34 +213,54 @@ var Pzl;
             function addNodeAndLink(src, dest, timeout) {
                 if (src === dest)
                     return;
-                setTimeout(function () {
+                Q.delay(timeout).done(function () {
                     graphCanvas.addNode(src);
                     graphCanvas.addNode(dest);
                     graphCanvas.addLink(src, dest, edgeLength);
                     Insight.Graph.keepNodesOnTop();
                     updateSlider();
-                }, timeout);
+                });
             }
-            function hasEdge(seenEdges, edge) {
+            var seenEdges = [];
+            function hasEdge(edge, actor) {
+                var n1 = edge.actorId;
+                var n2 = actor.id;
+                if (n2 < n1) {
+                    var n3 = n1;
+                    n1 = n2;
+                    n2 = n3;
+                }
                 for (var i = 0; i < seenEdges.length; i++) {
-                    if (seenEdges[i].workid === edge.workid && seenEdges[i].actorId === edge.actorId) {
+                    if (seenEdges[i].workId === edge.workid && seenEdges[i].actorId1 === n1 && seenEdges[i].actorId2 === n2) {
                         return true;
                     }
                 }
-                seenEdges.push(edge);
+                var ge = new Insight.GraphedEdge(n1, n2, edge.workid);
+                seenEdges.push(ge);
                 return false;
             }
-            function graphEdges(actor, seenEdges) {
+            function getAssociateNameById(actorId) {
+                var vals = Insight.searchHelper.allReachedActors.values();
+                for (var i = 0; i < vals.length; i++) {
+                    if (vals[i].id === actorId) {
+                        return vals[i].name;
+                    }
+                }
+                return actorId.toString();
+            }
+            function graphEdges(actor) {
+                console.log("Graphing for: " + actor.name);
                 var pause = 0;
                 for (var i = 0; i < actor.collabItems.length; i++) {
                     var item = actor.collabItems[i];
                     if (item.getNumberOfContributors() > 1) {
                         pause++;
                         for (var edgeCount = 0; edgeCount < item.rawEdges.length; edgeCount++) {
-                            if (hasEdge(seenEdges, item.rawEdges[edgeCount])) {
+                            if (hasEdge(item.rawEdges[edgeCount], actor)) {
+                                console.log("edge seen");
                                 continue;
                             }
-                            var name = actor.getAssociateNameById(item.rawEdges[edgeCount].actorId);
+                            var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
                             addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
                         }
                         ;
@@ -247,6 +277,8 @@ var Pzl;
                 jQuery("#message").empty();
                 jQuery("#steplist option").remove();
                 jQuery("#maxValue").text("1");
+                Insight.searchHelper.allReachedActors.clear();
+                seenEdges = [];
                 collabItemHighScore = new ItemCountHighScore();
                 collabActorHighScore = new ActorCountHighScore();
                 collabMinActorHightScore = new ActorLowCollaboratorHighScore();
@@ -258,38 +290,73 @@ var Pzl;
                 longestItem = undefined;
                 benchmarkActor = undefined;
             }
+            function loadColleaguesFor(count, total, associateActor, reach) {
+                var deferred = Q.defer();
+                Q.delay(500 * count).done(function () {
+                    log("Loading actors for " + associateActor.name);
+                    Insight.searchHelper.loadColleagues(associateActor, reach).then(function (actors) {
+                        for (var j = 0; j < actors.length; j++) {
+                            if (!Insight.searchHelper.allReachedActors.containsKey(actors[j].id)) {
+                                Insight.searchHelper.allReachedActors.put(actors[j].id, actors[j]);
+                            }
+                        }
+                        log("Actor actual reach: " + Insight.searchHelper.allReachedActors.size());
+                        if (count === total - 1) {
+                            log("Done");
+                            deferred.resolve(true); // loaded all actors
+                        }
+                        else {
+                            deferred.resolve(false);
+                        }
+                    });
+                });
+                return deferred.promise;
+            }
+            function loadEdgesForAll() {
+                //var deferred = Q.defer<boolean>();
+                var count = 0;
+                Insight.searchHelper.allReachedActors.each(function (actorId, actor) {
+                    Q.delay(count * 500).done(function () {
+                        Insight.searchHelper.loadCollabModifiedItemsForActor(actor).then(function (items) {
+                            actor.collabItems = items;
+                            console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
+                            graphEdges(actor);
+                            updateStats(actor, false);
+                        });
+                    });
+                    count++;
+                });
+                log("All processed!");
+                //deferred.promise;
+            }
             function initializePage(reach) {
                 resetDataAndUI();
-                var seenEdges = [];
                 jQuery(document).ready(function () {
                     graphCanvas = Insight.Graph.init("forceGraph");
                     SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor", function () {
                         var runfunc;
-                        if (!selectedActor) {
-                            runfunc = searchHelper.loadAllOfMe(reach);
+                        if (!peoplePickerActor) {
+                            runfunc = Insight.searchHelper.loadAllOfMe(reach);
                         }
                         else {
-                            runfunc = searchHelper.populateActor(selectedActor, reach);
+                            Insight.searchHelper.mainActor = peoplePickerActor;
+                            runfunc = Insight.searchHelper.loadColleagues(peoplePickerActor, reach);
                         }
-                        runfunc.delay(1000).done(function (me) {
-                            log("Processing edges for " + me.name);
-                            log(me.name + "(" + me.id + ")" + " has " + me.associates.length + " associates and " + me.collabItems.length + " items");
-                            updateStats(me, true);
-                            graphEdges(me, seenEdges);
-                            for (var i = 0; i < me.associates.length; i++) {
-                                var c = me.associates[i];
-                                log("Processing edges for " + c.name);
-                                if (c.name === me.name) {
+                        runfunc.then(function (associates) {
+                            updateStats(Insight.searchHelper.mainActor, true);
+                            Insight.searchHelper.allReachedActors.put(Insight.searchHelper.mainActor.id, Insight.searchHelper.mainActor);
+                            for (var i = 0; i < associates.length; i++) {
+                                var associate = associates[i];
+                                if (!Insight.searchHelper.allReachedActors.containsKey(associate.id)) {
+                                    Insight.searchHelper.allReachedActors.put(associate.id, associate);
+                                }
+                                if (associate.id === Insight.searchHelper.mainActor.id) {
                                     continue;
                                 }
-                                searchHelper.populateActor(c, reach).delay(500 * i).done(function (c) {
-                                    if (c.collabItems.length === 0) {
-                                        log("No collaborative edges found for " + c.name);
-                                        return;
+                                loadColleaguesFor(i, associates.length, associate, reach).done(function (isLastActor) {
+                                    if (isLastActor) {
+                                        loadEdgesForAll();
                                     }
-                                    graphEdges(c, seenEdges);
-                                    log(c.name + "(" + c.id + ")" + " has " + c.associates.length + " associates and " + c.collabItems.length + " items");
-                                    updateStats(c, false);
                                 });
                             }
                         });
@@ -309,7 +376,7 @@ $(document).ready(function () {
         loadPeoplePicker("peoplePickerDiv");
     });
 });
-var selectedActor = null;
+var peoplePickerActor = null;
 //Load the people picker
 function loadPeoplePicker(peoplePickerElementId) {
     var EnsurePeoplePickerRefinementInit = function () {
@@ -325,11 +392,11 @@ function loadPeoplePicker(peoplePickerElementId) {
                 var query = "accountname:" + person.AutoFillKey;
                 var helper = new Pzl.OfficeGraph.Insight.SearchHelper();
                 helper.loadActorsByQuery(query).done(function (actors) {
-                    selectedActor = actors[0];
+                    peoplePickerActor = actors[0];
                 });
             }
             else {
-                selectedActor = undefined;
+                peoplePickerActor = undefined;
             }
         };
         SP.SOD.executeFunc("clienttemplates.js", "SPClientTemplates", function () {

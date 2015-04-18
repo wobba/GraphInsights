@@ -144,7 +144,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return this.maxCountB;
             }
 
-            this.addLink = (source, target, value) => {
+            this.addLink = (source:string, target:string, value:number) => {
                 if (source > target) {
                     // sort names
                     var temp = target;
@@ -156,11 +156,13 @@ module Pzl.OfficeGraph.Insight.Graph {
                 for (var i = 0; i < this.links.length; i++) {
                     // links are the same if source/target are the same
                     if ((this.links[i].source.id === source && this.links[i].target.id === target)
-                        || (this.links[i].source.id === target && this.links[i].target.id === source)) {
+                        || (this.links[i].source.id === target && this.links[i].target.id === source)
+                        ) {
                         found = true;
+                        //console.log("Existing link: " + source+ ":" +target);
                         this.links[i].count += 1; // keep track of number of collabs between actors
                         // existing link - shorten to show closeness
-                        if (this.links[i].value > 50) {
+                        if (this.links[i].value > 100) {
                             this.links[i].value = this.links[i].value / 2;
                         }
 
@@ -171,9 +173,6 @@ module Pzl.OfficeGraph.Insight.Graph {
                         value = this.links[i].value;
                         break;
                     }
-                }
-                if ((target.indexOf("Elsa") !== -1 || source.indexOf("Elsa") !== -1) && (target.indexOf("Tormod") !== -1 || source.indexOf("Tormod") !== -1)) {
-                    console.log(found + ":" + source + ":" + target + ":" + value);
                 }
                 if (!found) {
                     this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });

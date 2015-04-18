@@ -11,7 +11,6 @@ module Pzl.OfficeGraph.Insight {
         gender: Gender;
         age: number;
         collabItems: Item[];
-        associates: Actor[];
 
         // Average number of recorded saves per item
         getItemModificationsAverage(): number {
@@ -145,17 +144,17 @@ module Pzl.OfficeGraph.Insight {
             return count;
         }
 
-        getAssociateNameById(actorId: number): string {
-            if (actorId === this.id) {
-                return this.name;
-            }
-            for (var i = 0; i < this.associates.length; i++) {
-                if (this.associates[i].id === actorId) {
-                    return this.associates[i].name;
-                }
-            }
-            return actorId.toString();
-        }
+        //getAssociateNameById(actorId: number): string {
+        //    if (actorId === this.id) {
+        //        return this.name;
+        //    }
+        //    for (var i = 0; i < this.associates.length; i++) {
+        //        if (this.associates[i].id === actorId) {
+        //            return this.associates[i].name;
+        //        }
+        //    }
+        //    return actorId.toString();
+        //}
     }
 
     export class Edge {
@@ -165,6 +164,17 @@ module Pzl.OfficeGraph.Insight {
         action: Action;
         time: Date;
         weight: number;
+    }
+
+    export class GraphedEdge {
+        constructor(actorId1: number, actorId2: number, workId: number) {
+            this.actorId1 = actorId1;
+            this.actorId2 = actorId2;
+            this.workId = workId;
+        }
+        actorId1: number;
+        actorId2: number;
+        workId: number;
     }
 
     export enum Gender {
