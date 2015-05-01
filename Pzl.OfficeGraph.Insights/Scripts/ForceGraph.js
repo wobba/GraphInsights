@@ -14,6 +14,7 @@ var Pzl;
                     function MyGraph(domId) {
                         var _this = this;
                         this.maxCountB = 1;
+                        this.hideCount = 0;
                         var findNodeIndex = function (id) {
                             for (var i = 0; i < _this.nodes.length; i++) {
                                 if (_this.nodes[i].id == id) {
@@ -33,23 +34,33 @@ var Pzl;
                             }
                             return count === 0;
                         };
+                        this.linkCountNode = function (source) {
+                            var count = 0;
+                            for (var i = 0; i < _this.links.length; i++) {
+                                if ((_this.links[i].source.id === source || _this.links[i].target.id === source)) {
+                                    count++;
+                                }
+                            }
+                            return count;
+                        };
                         this.highlightNode = function (node, highlightClass, opacity) {
                             for (var i = this.links.length - 1; i >= 0; i--) {
                                 var link = this.links[i];
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
-                                if (link.source.id === node.id || link.target.id === node.id) {
+                                if ((link.source.id === node.id || link.target.id === node.id) && link.count > this.hideCount) {
                                     d3.select(id).transition().style("opacity", 1).attr("class", highlightClass);
                                 }
-                                else {
+                                else if (link.count > this.hideCount) {
                                     d3.select(id).transition().style("opacity", opacity).attr("class", "link");
                                 }
                             }
                         };
                         this.showFilterByCount = function (hideCount) {
+                            this.hideCount = hideCount;
                             var animDuration = 250;
                             for (var i = this.links.length - 1; i >= 0; i--) {
                                 var link = this.links[i];
-                                console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
+                                //console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                                 if (link.count <= hideCount) {
                                     //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
@@ -122,12 +133,13 @@ var Pzl;
                                 target = source;
                                 source = temp;
                             }
+                            var linkNodeA;
+                            var linkNodeB;
                             var found = false;
                             for (var i = 0; i < _this.links.length; i++) {
                                 // links are the same if source/target are the same
                                 if ((_this.links[i].source.id === source && _this.links[i].target.id === target) || (_this.links[i].source.id === target && _this.links[i].target.id === source)) {
                                     found = true;
-                                    //console.log("Existing link: " + source+ ":" +target);
                                     _this.links[i].count += 1; // keep track of number of collabs between actors
                                     // existing link - shorten to show closeness
                                     if (_this.links[i].value > 100) {
@@ -137,12 +149,28 @@ var Pzl;
                                         _this.maxCountB = _this.links[i].count;
                                     }
                                     value = _this.links[i].value;
+                                    linkNodeA = _this.links[i].source;
+                                    linkNodeB = _this.links[i].target;
                                     break;
                                 }
                             }
                             if (!found) {
-                                _this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });
+                                linkNodeA = findNode(source);
+                                linkNodeB = findNode(target);
+                                _this.links.push({ "source": linkNodeA, "target": linkNodeB, "value": value, "count": 1 });
                             }
+                            // set A node size
+                            var id = "#Node" + _this.validCssName(linkNodeA.id);
+                            var numberOfLinks = _this.linkCountNode(linkNodeA.id) - 1;
+                            numberOfLinks = Math.min(16, numberOfLinks);
+                            var r = 16 * (1 + numberOfLinks / 16);
+                            d3.select(id).attr("r", r);
+                            // set B node size
+                            id = "#Node" + _this.validCssName(linkNodeB.id);
+                            numberOfLinks = _this.linkCountNode(linkNodeB.id) - 1;
+                            numberOfLinks = Math.min(16, numberOfLinks);
+                            r = 16 * (1 + numberOfLinks / 16);
+                            d3.select(id).attr("r", r);
                             update();
                         };
                         var findNode = function (id) {
@@ -175,6 +203,18 @@ var Pzl;
                             link.exit().remove();
                             var node = vis.selectAll("g.node").data(_this.nodes, function (d) { return d.id; });
                             var nodeEnter = node.enter().append("g").attr("class", "node").call(force.drag);
+                            //nodeEnter.filter(d=> { return this.isSingleNode(d.id, 1) }).append("svg:circle")
+                            //    .attr("r", r)
+                            //    .attr("id", d => ("Node" + this.validCssName(d.id)))
+                            //    .attr("class", "nodeStrokeClass")
+                            //    .attr("fill", d => color(d.id))
+                            //    .transition().duration(fadeinTime).style("opacity", 1);
+                            //nodeEnter.filter(d=> { return !this.isSingleNode(d.id, 1) }).append("svg:circle")
+                            //    .attr("r", r)
+                            //    .attr("id", d => ("Node" + this.validCssName(d.id)))
+                            //    .attr("class", "nodeStrokeClass")
+                            //    .attr("fill", d => color(d.id))
+                            //    .style("opacity", 0);
                             nodeEnter.append("svg:circle").attr("r", r).attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); }).attr("class", "nodeStrokeClass").attr("fill", function (d) { return color(d.id); }).transition().duration(fadeinTime).style("opacity", 1);
                             nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 18).attr("y", ".31em").transition().duration(fadeinTime).style("opacity", 1).text(function (d) { return d.id; });
                             node.exit().remove();
@@ -224,12 +264,6 @@ var Pzl;
                 Graph.MyGraph = MyGraph;
                 function initGraph(domId) {
                     graph = new MyGraph(domId);
-                    // callback for the changes in the network
-                    //var step = -1;
-                    //function nextval() {
-                    //    step++;
-                    //    return 2000 + (1500 * step); // initial time, wait time
-                    //}
                     return graph;
                 }
                 // because of the way the network is created, nodes are created first, and links second,

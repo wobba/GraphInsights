@@ -37,9 +37,9 @@
 
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    <div style="vertical-align: top">
+    <div style="display: table-cell;vertical-align: middle">
         Collaboration Insights by
-        <img src="../Images/Puzzlepart_logo.png" style="height: 40px;margin-top:8px" />
+        <img src="../Images/Puzzlepart_logo.png" style="height: 40px; position:relative; top:8px" />
     </div>
 </asp:Content>
 
@@ -67,7 +67,7 @@
                 <datalist id="steplist" />
             </div>
             <div class="controlItem">
-                <input type="button" onclick=" Pzl.OfficeGraph.Insight.initializePage(jQuery('#colleagueReach').val()); return false; " value="Kick it!" class="kickIt" />
+                <input type="button" onclick="filterSlider.value = 0; filterSlider.max = 1; Pzl.OfficeGraph.Insight.initializePage(jQuery('#colleagueReach').val()); return false;" value="Kick it!" class="kickIt" />
             </div>
         </div>
     </div>
@@ -77,7 +77,10 @@
         </div>
         <div class="graphArea">
             <div id="forceGraph">
-                <div id="lala" style="border: solid 1px #555; display: none; position: absolute; width: 200px; height: 200px;background-color: white"></div>
+                <div id="statusMessageArea" style="display:none">
+                    <div id="statusMessage"></div>
+                </div>
+                <div id="lala" style="border: solid 1px #555; display: none; position: absolute; width: 200px; height: 200px; background-color: white"></div>
             </div>
         </div>
     </div>

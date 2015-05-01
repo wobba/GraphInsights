@@ -21,6 +21,7 @@ module Pzl.OfficeGraph.Insight.Graph {
         removeNode;
         showFilterByCount;
         isSingleNode;
+        linkCountNode;
         validCssName;
         addNode;
         getLinks;
@@ -30,6 +31,7 @@ module Pzl.OfficeGraph.Insight.Graph {
         nodes;
         maxCount; // max number of collabs
         maxCountB: number = 1;
+        hideCount: number = 0;
 
         constructor(domId: string) {
             var findNodeIndex = id => {
@@ -55,14 +57,24 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return count === 0;
             };
 
+            this.linkCountNode = (source: string) => {
+                var count = 0;
+                for (var i = 0; i < this.links.length; i++) {
+                    if ((this.links[i].source.id === source || this.links[i].target.id === source)) {
+                        count++;
+                    }
+                }
+                return count;
+            };
+
             this.highlightNode = function (node, highlightClass: string, opacity: number) {
                 for (var i = this.links.length - 1; i >= 0; i--) {
                     var link = this.links[i];
                     var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
-                    if (link.source.id === node.id || link.target.id === node.id) {
+                    if ((link.source.id === node.id || link.target.id === node.id) && link.count > this.hideCount) {
                         d3.select(id).transition().style("opacity", 1)
                             .attr("class", highlightClass);
-                    } else {
+                    } else if (link.count > this.hideCount) {
                         d3.select(id).transition().style("opacity", opacity)
                             .attr("class", "link");
                     }
@@ -70,10 +82,11 @@ module Pzl.OfficeGraph.Insight.Graph {
             };
 
             this.showFilterByCount = function (hideCount) {
+                this.hideCount = hideCount;
                 var animDuration = 250;
                 for (var i = this.links.length - 1; i >= 0; i--) {
                     var link = this.links[i];
-                    console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
+                    //console.log(link.source.id + ":" + link.target.id + ":" + link.value + ":" + link.count);
                     var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                     if (link.count <= hideCount) {
                         //this.removeLink(link.source.id, link.target.id); //TODO: perhaps save in a list and re-add
@@ -144,13 +157,16 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return this.maxCountB;
             }
 
-            this.addLink = (source:string, target:string, value:number) => {
+            this.addLink = (source: string, target: string, value: number) => {
                 if (source > target) {
                     // sort names
                     var temp = target;
                     target = source;
                     source = temp;
                 }
+
+                var linkNodeA;
+                var linkNodeB;
 
                 var found = false;
                 for (var i = 0; i < this.links.length; i++) {
@@ -159,7 +175,6 @@ module Pzl.OfficeGraph.Insight.Graph {
                         || (this.links[i].source.id === target && this.links[i].target.id === source)
                         ) {
                         found = true;
-                        //console.log("Existing link: " + source+ ":" +target);
                         this.links[i].count += 1; // keep track of number of collabs between actors
                         // existing link - shorten to show closeness
                         if (this.links[i].value > 100) {
@@ -171,12 +186,33 @@ module Pzl.OfficeGraph.Insight.Graph {
                         }
 
                         value = this.links[i].value;
+
+                        linkNodeA = this.links[i].source;
+                        linkNodeB = this.links[i].target;
                         break;
                     }
                 }
                 if (!found) {
-                    this.links.push({ "source": findNode(source), "target": findNode(target), "value": value, "count": 1 });
+                    linkNodeA = findNode(source);
+                    linkNodeB = findNode(target);
+                    this.links.push({ "source": linkNodeA, "target": linkNodeB, "value": value, "count": 1 });
                 }
+                
+                // set A node size
+                var id = "#Node" + this.validCssName(linkNodeA.id);
+                var numberOfLinks = this.linkCountNode(linkNodeA.id) - 1;
+                numberOfLinks = Math.min(16, numberOfLinks);
+                var r = 16 * (1 + numberOfLinks / 16);                
+                d3.select(id).attr("r", r);
+
+
+                // set B node size
+                id = "#Node" + this.validCssName(linkNodeB.id);
+                numberOfLinks = this.linkCountNode(linkNodeB.id) - 1;
+                numberOfLinks = Math.min(16, numberOfLinks);
+                r = 16 * (1 + numberOfLinks / 16);          
+                d3.select(id).attr("r", r);
+
                 update();
             };
 
@@ -212,7 +248,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 .attr("viewBox", "0 0 " + w + " " + h)
                 .attr("perserveAspectRatio", "xMinYMid")
                 .append('svg:g')
-                //.call(d3.behavior.zoom().on("zoom", rescale))
+            //.call(d3.behavior.zoom().on("zoom", rescale))
                 ;
 
             var force = d3.layout.force();
@@ -244,6 +280,21 @@ module Pzl.OfficeGraph.Insight.Graph {
                     .attr("class", "node")
                     .call(force.drag);
 
+                //nodeEnter.filter(d=> { return this.isSingleNode(d.id, 1) }).append("svg:circle")
+                //    .attr("r", r)
+                //    .attr("id", d => ("Node" + this.validCssName(d.id)))
+                //    .attr("class", "nodeStrokeClass")
+                //    .attr("fill", d => color(d.id))
+                //    .transition().duration(fadeinTime).style("opacity", 1);
+
+                //nodeEnter.filter(d=> { return !this.isSingleNode(d.id, 1) }).append("svg:circle")
+                //    .attr("r", r)
+                //    .attr("id", d => ("Node" + this.validCssName(d.id)))
+                //    .attr("class", "nodeStrokeClass")
+                //    .attr("fill", d => color(d.id))
+                //    .style("opacity", 0);
+
+
                 nodeEnter.append("svg:circle")
                     .attr("r", r)
                     .attr("id", d => ("Node" + this.validCssName(d.id)))
@@ -266,7 +317,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                     //jQuery("#lala").css({ top: (d.y + 20), left: (d.x + 40) }).show();
                     //put actor image + data
                 })
-                .on("mouseup", d => {
+                    .on("mouseup", d => {
                     //jQuery("#lala").hide();
                     this.highlightNode(d, "link", 1);
                 }).on("mouseout", d => {
@@ -280,7 +331,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                         .attr("x2", d => d.target.x)
                         .attr("y2", d => d.target.y);
 
-                    node.attr("transform", d => {
+                    node.attr("transform", d => {                        
                         // keep nodes inside canvas - code by mikael
                         //var move = 50;
                         //if (d.x < 0) {
@@ -322,12 +373,6 @@ module Pzl.OfficeGraph.Insight.Graph {
 
     function initGraph(domId: string): MyGraph {
         graph = new MyGraph(domId);
-        // callback for the changes in the network
-        //var step = -1;
-        //function nextval() {
-        //    step++;
-        //    return 2000 + (1500 * step); // initial time, wait time
-        //}
         return graph;
     }
 

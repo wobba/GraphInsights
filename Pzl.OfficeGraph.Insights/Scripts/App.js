@@ -17,6 +17,15 @@ var Pzl;
         var Insight;
         (function (Insight) {
             function log(message) {
+                if (message.length === 0) {
+                    jQuery("#statusMessageArea").fadeOut();
+                }
+                else if (!jQuery("#statusMessageArea").is(":visible")) {
+                    jQuery("#statusMessageArea").fadeIn();
+                }
+                jQuery("#statusMessage").fadeOut(function () {
+                    $(this).text(message).fadeIn();
+                });
                 jQuery("#log").prepend(message + "<br/>");
                 console.log(message);
             }
@@ -148,10 +157,12 @@ var Pzl;
             var graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
             function updateStats(actor, benchMarkAgainstActor) {
                 try {
-                    if (benchMarkAgainstActor)
+                    if (benchMarkAgainstActor) {
                         benchmarkActor = actor;
-                    if (!actor.collabItems)
                         return;
+                    }
+                    if (!actor.collabItems && !benchMarkAgainstActor)
+                        return; // ensure benchmark user is included even though there is no collab docs seen
                     var currentCollabItemCount = actor.getCollaborationItemCount();
                     var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
                     collabItemHighScore.rankValues.push(collabItemEntry);
@@ -193,11 +204,11 @@ var Pzl;
                     jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
                 }
                 catch (e) {
-                    log(e.message);
+                    console.log(e.message);
                 }
             }
             function updateSlider() {
-                var max = graphCanvas.maxCount();
+                var max = graphCanvas.maxCount() - 1;
                 var slider = jQuery("#filterSlider");
                 var data = jQuery("#steplist");
                 var options = jQuery("#steplist option");
@@ -248,8 +259,9 @@ var Pzl;
                 }
                 return actorId.toString();
             }
-            function graphEdges(actor) {
-                console.log("Graphing for: " + actor.name);
+            function graphEdges(actor, lastActor) {
+                //TODO: add promise - add if last then log message
+                log("Graphing edges for " + actor.name);
                 var pause = 0;
                 for (var i = 0; i < actor.collabItems.length; i++) {
                     var item = actor.collabItems[i];
@@ -257,7 +269,6 @@ var Pzl;
                         pause++;
                         for (var edgeCount = 0; edgeCount < item.rawEdges.length; edgeCount++) {
                             if (hasEdge(item.rawEdges[edgeCount], actor)) {
-                                console.log("edge seen");
                                 continue;
                             }
                             var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
@@ -267,9 +278,12 @@ var Pzl;
                     }
                 }
             }
+            var lastfilterCount = 0;
             function hideSingleCollab(count) {
-                if (graphCanvas)
+                if (graphCanvas && count !== lastfilterCount) {
+                    lastfilterCount = count;
                     graphCanvas.showFilterByCount(count);
+                }
             }
             Insight.hideSingleCollab = hideSingleCollab;
             function resetDataAndUI() {
@@ -277,6 +291,7 @@ var Pzl;
                 jQuery("#message").empty();
                 jQuery("#steplist option").remove();
                 jQuery("#maxValue").text("1");
+                lastfilterCount = 0;
                 Insight.searchHelper.allReachedActors.clear();
                 seenEdges = [];
                 collabItemHighScore = new ItemCountHighScore();
@@ -293,41 +308,65 @@ var Pzl;
             function loadColleaguesFor(count, total, associateActor, reach) {
                 var deferred = Q.defer();
                 Q.delay(500 * count).done(function () {
-                    log("Loading actors for " + associateActor.name);
+                    log("Hiring co-actors for " + associateActor.name);
                     Insight.searchHelper.loadColleagues(associateActor, reach).then(function (actors) {
                         for (var j = 0; j < actors.length; j++) {
                             if (!Insight.searchHelper.allReachedActors.containsKey(actors[j].id)) {
                                 Insight.searchHelper.allReachedActors.put(actors[j].id, actors[j]);
                             }
                         }
-                        log("Actor actual reach: " + Insight.searchHelper.allReachedActors.size());
                         if (count === total - 1) {
-                            log("Done");
-                            deferred.resolve(true); // loaded all actors
+                            log("Total cast is " + Insight.searchHelper.allReachedActors.size() + " actors");
+                            Q.delay(2500).then(function () {
+                                deferred.resolve(true); // loaded all actors
+                            });
                         }
                         else {
+                            log(Insight.searchHelper.allReachedActors.size() + " actors on audition so far");
                             deferred.resolve(false);
                         }
                     });
                 });
                 return deferred.promise;
             }
-            function loadEdgesForAll() {
-                //var deferred = Q.defer<boolean>();
-                var count = 0;
-                Insight.searchHelper.allReachedActors.each(function (actorId, actor) {
-                    Q.delay(count * 500).done(function () {
-                        Insight.searchHelper.loadCollabModifiedItemsForActor(actor).then(function (items) {
+            function queueActorForGraph(actor, count) {
+                Q.delay(count * 500).then(function () {
+                    Insight.searchHelper.loadCollabModifiedItemsForActor(actor).then(function (items) {
+                        if (items.length > 0) {
                             actor.collabItems = items;
                             console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
-                            graphEdges(actor);
+                            graphEdges(actor, count === Insight.searchHelper.allReachedActors.size());
                             updateStats(actor, false);
-                        });
+                        }
+                        if (count === Insight.searchHelper.allReachedActors.size()) {
+                            log("All actors on edge have been cast!");
+                            Q.delay(3500).then(function () {
+                                log("");
+                            });
+                        }
                     });
-                    count++;
                 });
-                log("All processed!");
-                //deferred.promise;
+            }
+            function loadEdgesForAll() {
+                Q.delay(1000).then(function () {
+                    log("5");
+                }).delay(1000).then(function () {
+                    log("4");
+                }).delay(1000).then(function () {
+                    log("3");
+                }).delay(1000).then(function () {
+                    log("2");
+                }).delay(1000).then(function () {
+                    log("1");
+                }).delay(1000).then(function () {
+                    log("GO!");
+                }).then(function () {
+                    var count = 0;
+                    Insight.searchHelper.allReachedActors.each(function (actorId, actor) {
+                        count++;
+                        queueActorForGraph(actor, count);
+                    });
+                });
             }
             function initializePage(reach) {
                 resetDataAndUI();
