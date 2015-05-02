@@ -167,6 +167,32 @@ var Pzl;
             function setStatsComparisonActor(actor) {
                 benchmarkActor = actor;
             }
+            function showStats(actorId) {
+                var actor;
+                var lastBenchMarkActor = benchmarkActor;
+                if (actorId === 0) {
+                    actor = benchmarkActor;
+                }
+                else {
+                    actor = getActorById(actorId);
+                }
+                setStatsComparisonActor(actor);
+                jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
+                jQuery("#message").empty();
+                jQuery("#message").append(collabItemHighScore.getMetricString(actor));
+                jQuery("#message").append(collabMinActorHightScore.getMetricString(actor));
+                jQuery("#message").append(collabActorHighScore.getMetricString(actor));
+                jQuery("#message").append(collabEgoHighScore.getMetricString(actor));
+                jQuery("#message").append(frequentSaverHighScore.getMetricString(actor));
+                jQuery("#message").append(topSaverHighScore.getMetricString(actor));
+                if (longestItem) {
+                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+                }
+                jQuery("#message").append(itemStarterHighScore.getMetricString(actor));
+                jQuery("#message").append(lastModifierHighScore.getMetricString(actor));
+                //reset to benchmarkActor
+                setStatsComparisonActor(lastBenchMarkActor);
+            }
             function updateStats(actor) {
                 try {
                     //if (benchMarkAgainstActor) {
@@ -202,48 +228,11 @@ var Pzl;
                     var thismaxModifier = actor.getLastSaverCount();
                     var lastModifierEntry = new HighScoreEntry(actor, thismaxModifier);
                     lastModifierHighScore.rankValues.push(lastModifierEntry);
-                    jQuery("#message").empty();
-                    jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
-                    if (longestItem) {
-                        jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
-                    }
-                    jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
-                    jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
+                    showStats(0);
                 }
                 catch (e) {
                     console.log(e.message);
                 }
-            }
-            function showStats(actorId) {
-                var actor;
-                var lastBenchMarkActor = benchmarkActor;
-                if (actorId === 0) {
-                    actor = benchmarkActor;
-                }
-                else {
-                    actor = getActorById(actorId);
-                }
-                setStatsComparisonActor(actor);
-                jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
-                jQuery("#message").empty();
-                jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
-                if (longestItem) {
-                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
-                }
-                jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
-                jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
-                //reset to benchmarkActor
-                setStatsComparisonActor(lastBenchMarkActor);
             }
             function updateSlider() {
                 var max = graphCanvas.maxCount() - 1;
