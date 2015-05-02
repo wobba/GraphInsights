@@ -143,18 +143,6 @@ module Pzl.OfficeGraph.Insight {
             }
             return count;
         }
-
-        //getAssociateNameById(actorId: number): string {
-        //    if (actorId === this.id) {
-        //        return this.name;
-        //    }
-        //    for (var i = 0; i < this.associates.length; i++) {
-        //        if (this.associates[i].id === actorId) {
-        //            return this.associates[i].name;
-        //        }
-        //    }
-        //    return actorId.toString();
-        //}
     }
 
     export class Edge {

@@ -155,13 +155,25 @@ var Pzl;
             })(HighScoreComparison);
             Insight.searchHelper = new Insight.SearchHelper();
             var graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
-            function updateStats(actor, benchMarkAgainstActor) {
-                try {
-                    if (benchMarkAgainstActor) {
-                        benchmarkActor = actor;
-                        return;
+            function getActorById(actorId) {
+                var vals = Insight.searchHelper.allReachedActors.values();
+                for (var i = 0; i < vals.length; i++) {
+                    if (vals[i].id === actorId) {
+                        return vals[i];
                     }
-                    if (!actor.collabItems && !benchMarkAgainstActor)
+                }
+                return null;
+            }
+            function setStatsComparisonActor(actor) {
+                benchmarkActor = actor;
+            }
+            function updateStats(actor) {
+                try {
+                    //if (benchMarkAgainstActor) {
+                    //    benchmarkActor = actor;
+                    //    return;
+                    //}
+                    if (!actor.collabItems && actor.id !== benchmarkActor.id)
                         return; // ensure benchmark user is included even though there is no collab docs seen
                     var currentCollabItemCount = actor.getCollaborationItemCount();
                     var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
@@ -207,6 +219,32 @@ var Pzl;
                     console.log(e.message);
                 }
             }
+            function showStats(actorId) {
+                var actor;
+                var lastBenchMarkActor = benchmarkActor;
+                if (actorId === 0) {
+                    actor = benchmarkActor;
+                }
+                else {
+                    actor = getActorById(actorId);
+                }
+                setStatsComparisonActor(actor);
+                jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
+                jQuery("#message").empty();
+                jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
+                if (longestItem) {
+                    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+                }
+                jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
+                jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
+                //reset to benchmarkActor
+                setStatsComparisonActor(lastBenchMarkActor);
+            }
             function updateSlider() {
                 var max = graphCanvas.maxCount() - 1;
                 var slider = jQuery("#filterSlider");
@@ -221,13 +259,24 @@ var Pzl;
                     }
                 }
             }
-            function addNodeAndLink(src, dest, timeout) {
-                if (src === dest)
+            function getAssociateNameById(actorId) {
+                var vals = Insight.searchHelper.allReachedActors.values();
+                for (var i = 0; i < vals.length; i++) {
+                    if (vals[i].id === actorId) {
+                        return vals[i].name;
+                    }
+                }
+                return actorId.toString();
+            }
+            function addNodeAndLink(srcId, destId, timeout) {
+                if (srcId === destId)
                     return;
+                var srcName = getAssociateNameById(srcId);
+                var destName = getAssociateNameById(destId);
                 Q.delay(timeout).done(function () {
-                    graphCanvas.addNode(src);
-                    graphCanvas.addNode(dest);
-                    graphCanvas.addLink(src, dest, edgeLength);
+                    graphCanvas.addNode(srcName, srcId);
+                    graphCanvas.addNode(destName, destId);
+                    graphCanvas.addLink(srcName, destName, edgeLength);
                     Insight.Graph.keepNodesOnTop();
                     updateSlider();
                 });
@@ -250,15 +299,6 @@ var Pzl;
                 seenEdges.push(ge);
                 return false;
             }
-            function getAssociateNameById(actorId) {
-                var vals = Insight.searchHelper.allReachedActors.values();
-                for (var i = 0; i < vals.length; i++) {
-                    if (vals[i].id === actorId) {
-                        return vals[i].name;
-                    }
-                }
-                return actorId.toString();
-            }
             function graphEdges(actor, lastActor) {
                 //TODO: add promise - add if last then log message
                 log("Graphing edges for " + actor.name);
@@ -271,8 +311,9 @@ var Pzl;
                             if (hasEdge(item.rawEdges[edgeCount], actor)) {
                                 continue;
                             }
-                            var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
-                            addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
+                            //var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
+                            //addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
+                            addNodeAndLink(actor.id, item.rawEdges[edgeCount].actorId, 500 * (edgeCount + pause));
                         }
                         ;
                     }
@@ -336,7 +377,7 @@ var Pzl;
                             actor.collabItems = items;
                             console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
                             graphEdges(actor, count === Insight.searchHelper.allReachedActors.size());
-                            updateStats(actor, false);
+                            updateStats(actor);
                         }
                         if (count === Insight.searchHelper.allReachedActors.size()) {
                             log("All actors on edge have been cast!");
@@ -371,7 +412,7 @@ var Pzl;
             function initializePage(reach) {
                 resetDataAndUI();
                 jQuery(document).ready(function () {
-                    graphCanvas = Insight.Graph.init("forceGraph");
+                    graphCanvas = Insight.Graph.init("forceGraph", showStats);
                     SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor", function () {
                         var runfunc;
                         if (!peoplePickerActor) {
@@ -382,7 +423,8 @@ var Pzl;
                             runfunc = Insight.searchHelper.loadColleagues(peoplePickerActor, reach);
                         }
                         runfunc.then(function (associates) {
-                            updateStats(Insight.searchHelper.mainActor, true);
+                            setStatsComparisonActor(Insight.searchHelper.mainActor);
+                            //                    updateStats(searchHelper.mainActor, true);
                             Insight.searchHelper.allReachedActors.put(Insight.searchHelper.mainActor.id, Insight.searchHelper.mainActor);
                             for (var i = 0; i < associates.length; i++) {
                                 var associate = associates[i];

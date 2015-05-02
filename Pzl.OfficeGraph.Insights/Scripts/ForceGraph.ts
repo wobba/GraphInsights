@@ -29,6 +29,7 @@ module Pzl.OfficeGraph.Insight.Graph {
         resetNode;
         links;
         nodes;
+        updateCallback;
         maxCount; // max number of collabs
         maxCountB: number = 1;
         hideCount: number = 0;
@@ -67,6 +68,8 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return count;
             };
 
+            var lastState = "";
+
             this.highlightNode = function (node, highlightClass: string, opacity: number) {
                 for (var i = this.links.length - 1; i >= 0; i--) {
                     var link = this.links[i];
@@ -79,6 +82,15 @@ module Pzl.OfficeGraph.Insight.Graph {
                             .attr("class", "link");
                     }
                 }
+                if (lastState !== (node.id + opacity)) {
+                    lastState = (node.id + opacity);
+                    if (opacity !== 1) {
+                        this.updateCallback(node.actorId);
+                    } else {
+                        this.updateCallback(0);
+                    }                    
+                }
+
             };
 
             this.showFilterByCount = function (hideCount) {
@@ -112,10 +124,10 @@ module Pzl.OfficeGraph.Insight.Graph {
             }
 
             // Add and remove elements on the graph object
-            this.addNode = id => {
-                var idx = findNodeIndex(id);
+            this.addNode = (name,actorId) => {
+                var idx = findNodeIndex(name);
                 if (idx === -1) {
-                    this.nodes.push({ "id": id });
+                    this.nodes.push({ "id": name, "actorId": actorId });
                     update();
                 }
             };
@@ -371,8 +383,9 @@ module Pzl.OfficeGraph.Insight.Graph {
         }
     }
 
-    function initGraph(domId: string): MyGraph {
+    function initGraph(domId: string, updateCallbackFunc: (actorId: number) => void): MyGraph {
         graph = new MyGraph(domId);
+        graph.updateCallback = updateCallbackFunc;
         return graph;
     }
 
@@ -384,9 +397,9 @@ module Pzl.OfficeGraph.Insight.Graph {
             gnode.parentNode.appendChild(gnode);
         });
     }
-    export function init(domId: string): MyGraph {
+    export function init(domId: string, updateCallbackFunc: (actorId: number) => void): MyGraph {
         d3.select("svg")
-            .remove();
-        return initGraph(domId);
+            .remove();        
+        return initGraph(domId, updateCallbackFunc);
     }
 }

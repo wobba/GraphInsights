@@ -43,6 +43,7 @@ var Pzl;
                             }
                             return count;
                         };
+                        var lastState = "";
                         this.highlightNode = function (node, highlightClass, opacity) {
                             for (var i = this.links.length - 1; i >= 0; i--) {
                                 var link = this.links[i];
@@ -52,6 +53,15 @@ var Pzl;
                                 }
                                 else if (link.count > this.hideCount) {
                                     d3.select(id).transition().style("opacity", opacity).attr("class", "link");
+                                }
+                            }
+                            if (lastState !== (node.id + opacity)) {
+                                lastState = (node.id + opacity);
+                                if (opacity !== 1) {
+                                    this.updateCallback(node.actorId);
+                                }
+                                else {
+                                    this.updateCallback(0);
                                 }
                             }
                         };
@@ -86,10 +96,10 @@ var Pzl;
                             update();
                         };
                         // Add and remove elements on the graph object
-                        this.addNode = function (id) {
-                            var idx = findNodeIndex(id);
+                        this.addNode = function (name, actorId) {
+                            var idx = findNodeIndex(name);
                             if (idx === -1) {
-                                _this.nodes.push({ "id": id });
+                                _this.nodes.push({ "id": name, "actorId": actorId });
                                 update();
                             }
                         };
@@ -262,8 +272,9 @@ var Pzl;
                     return MyGraph;
                 })();
                 Graph.MyGraph = MyGraph;
-                function initGraph(domId) {
+                function initGraph(domId, updateCallbackFunc) {
                     graph = new MyGraph(domId);
+                    graph.updateCallback = updateCallbackFunc;
                     return graph;
                 }
                 // because of the way the network is created, nodes are created first, and links second,
@@ -275,9 +286,9 @@ var Pzl;
                     });
                 }
                 Graph.keepNodesOnTop = keepNodesOnTop;
-                function init(domId) {
+                function init(domId, updateCallbackFunc) {
                     d3.select("svg").remove();
-                    return initGraph(domId);
+                    return initGraph(domId, updateCallbackFunc);
                 }
                 Graph.init = init;
             })(Graph = Insight.Graph || (Insight.Graph = {}));

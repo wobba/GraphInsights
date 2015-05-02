@@ -168,14 +168,59 @@ module Pzl.OfficeGraph.Insight {
         longestItem: Item,
         benchmarkActor: Actor;
 
-    function updateStats(actor: Actor, benchMarkAgainstActor: boolean) {
-        try {
-
-            if (benchMarkAgainstActor) {
-                benchmarkActor = actor;
-                return;
+    function getActorById(actorId: number): Actor {
+        var vals = searchHelper.allReachedActors.values();
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].id === actorId) {
+                return vals[i];
             }
-            if (!actor.collabItems && !benchMarkAgainstActor) return; // ensure benchmark user is included even though there is no collab docs seen
+        }
+        return null;
+    }
+
+    function setStatsComparisonActor(actor: Actor) {
+        benchmarkActor = actor;
+    }
+
+    function showStats(actorId: number) {
+        var actor: Actor;
+        var lastBenchMarkActor = benchmarkActor;
+
+        if (actorId === 0) {
+            actor = benchmarkActor;
+        } else {
+            actor = getActorById(actorId);
+        }
+        setStatsComparisonActor(actor);
+
+        jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
+
+        jQuery("#message").empty();
+        jQuery("#message").append(collabItemHighScore.getMetricString(actor));
+        jQuery("#message").append(collabMinActorHightScore.getMetricString(actor));
+        jQuery("#message").append(collabActorHighScore.getMetricString(actor));
+        jQuery("#message").append(collabEgoHighScore.getMetricString(actor));
+        jQuery("#message").append(frequentSaverHighScore.getMetricString(actor));
+        jQuery("#message").append(topSaverHighScore.getMetricString(actor));
+
+        if (longestItem) {
+            jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+        }
+
+        jQuery("#message").append(itemStarterHighScore.getMetricString(actor));
+        jQuery("#message").append(lastModifierHighScore.getMetricString(actor));
+
+        //reset to benchmarkActor
+        setStatsComparisonActor(lastBenchMarkActor);
+    }
+
+    function updateStats(actor: Actor) {
+        try {
+            //if (benchMarkAgainstActor) {
+            //    benchmarkActor = actor;
+            //    return;
+            //}
+            if (!actor.collabItems && actor.id !== benchmarkActor.id) return; // ensure benchmark user is included even though there is no collab docs seen
 
             var currentCollabItemCount = actor.getCollaborationItemCount();
             var collabItemEntry = new HighScoreEntry(actor, currentCollabItemCount);
@@ -213,21 +258,22 @@ module Pzl.OfficeGraph.Insight {
             var lastModifierEntry = new HighScoreEntry(actor, thismaxModifier);
             lastModifierHighScore.rankValues.push(lastModifierEntry);
 
+            showStats(0);
 
-            jQuery("#message").empty();
-            jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").empty();
+            //jQuery("#message").append(collabItemHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(collabMinActorHightScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(collabActorHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(collabEgoHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(frequentSaverHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(topSaverHighScore.getMetricString(benchmarkActor));
 
-            if (longestItem) {
-                jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
-            }
+            //if (longestItem) {
+            //    jQuery("#message").append("<p><b>" + longestItem.lastModifiedByName + "</b> refuse to let go and has kept an item alive for <b>" + longestItem.itemLifeSpanInDays() + "</b> days");
+            //}
 
-            jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
-            jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(itemStarterHighScore.getMetricString(benchmarkActor));
+            //jQuery("#message").append(lastModifierHighScore.getMetricString(benchmarkActor));
 
         } catch (e) {
             console.log(e.message);
@@ -249,12 +295,25 @@ module Pzl.OfficeGraph.Insight {
         }
     }
 
-    function addNodeAndLink(src: string, dest: string, timeout: number) {
-        if (src === dest) return;
+    function getAssociateNameById(actorId: number): string {
+        var vals = searchHelper.allReachedActors.values();
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].id === actorId) {
+                return vals[i].name;
+            }
+        }
+        return actorId.toString();
+    }
+
+    function addNodeAndLink(srcId: number, destId: number, timeout: number) {
+        if (srcId === destId) return;
+        var srcName = getAssociateNameById(srcId);
+        var destName = getAssociateNameById(destId);
+
         Q.delay(timeout).done(() => {
-            graphCanvas.addNode(src);
-            graphCanvas.addNode(dest);
-            graphCanvas.addLink(src, dest, edgeLength);
+            graphCanvas.addNode(srcName, srcId);
+            graphCanvas.addNode(destName, destId);
+            graphCanvas.addLink(srcName, destName, edgeLength);
             Graph.keepNodesOnTop();
             updateSlider();
         });
@@ -281,17 +340,6 @@ module Pzl.OfficeGraph.Insight {
         return false;
     }
 
-    function getAssociateNameById(actorId: number): string {
-        var vals = searchHelper.allReachedActors.values();
-        for (var i = 0; i < vals.length; i++) {
-            if (vals[i].id === actorId) {
-                return vals[i].name;
-            }
-        }
-        return actorId.toString();
-    }
-
-
     function graphEdges(actor: Actor, lastActor: boolean) {
         //TODO: add promise - add if last then log message
         log("Graphing edges for " + actor.name);
@@ -305,14 +353,15 @@ module Pzl.OfficeGraph.Insight {
                         //console.log("edge seen");
                         continue;
                     }
-                    var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
-                    addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
+                    //var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
+                    //addNodeAndLink(actor.name, name, 500 * (edgeCount + pause));
+                    addNodeAndLink(actor.id, item.rawEdges[edgeCount].actorId, 500 * (edgeCount + pause));
                 };
             }
         }
     }
 
-    var lastfilterCount : number = 0;
+    var lastfilterCount: number = 0;
     export function hideSingleCollab(count: number) {
         if (graphCanvas && count !== lastfilterCount) {
             lastfilterCount = count;
@@ -373,7 +422,7 @@ module Pzl.OfficeGraph.Insight {
                     actor.collabItems = items;
                     console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
                     graphEdges(actor, count === searchHelper.allReachedActors.size());
-                    updateStats(actor, false);
+                    updateStats(actor);
                 }
                 if (count === searchHelper.allReachedActors.size()) {
                     log("All actors on edge have been cast!");
@@ -398,7 +447,7 @@ module Pzl.OfficeGraph.Insight {
     export function initializePage(reach: number) {
         resetDataAndUI();
         jQuery(document).ready(() => {
-            graphCanvas = Graph.init("forceGraph");
+            graphCanvas = Graph.init("forceGraph", showStats);
 
             SP.SOD.executeFunc("sp.requestexecutor.js", "SP.RequestExecutor",() => {
                 var runfunc: Q.IPromise<Actor[]>;
@@ -410,7 +459,8 @@ module Pzl.OfficeGraph.Insight {
                 }
 
                 runfunc.then(associates => {
-                    updateStats(searchHelper.mainActor, true);
+                    setStatsComparisonActor(searchHelper.mainActor);
+//                    updateStats(searchHelper.mainActor, true);
 
                     searchHelper.allReachedActors.put(searchHelper.mainActor.id, searchHelper.mainActor);
                     for (var i = 0; i < associates.length; i++) {
@@ -420,7 +470,7 @@ module Pzl.OfficeGraph.Insight {
                         }
 
                         if (associate.id === searchHelper.mainActor.id) {
-                            continue;
+                            continue; // skip main actor - as we have loaded colleagues already
                         }
 
                         loadColleaguesFor(i, associates.length, associate, reach).done(isLastActor => {
