@@ -64,7 +64,7 @@ var Pzl;
                 SearchHelper.prototype.loadModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + 1003 /* Modified */ + ")");
+                    var searchPayload = this.getPayload("*", "ACTOR(" + actor.id + ", action:" + Insight.Action.Modified + ")");
                     this.postJson(searchPayload, function (data) {
                         var items = [];
                         if (data.PrimaryQueryResult != null) {
@@ -85,7 +85,7 @@ var Pzl;
                 SearchHelper.prototype.loadCollabModifiedItemsForActor = function (actor) {
                     var _this = this;
                     var deferred = Q.defer();
-                    var template = "actor(#ID#,action:" + 1003 /* Modified */ + ")";
+                    var template = "actor(#ID#,action:" + Insight.Action.Modified + ")";
                     var parts = [];
                     parts.push(template.replace("#ID#", actor.id.toString()));
                     var actorIds = this.allReachedActors.keys();
@@ -95,7 +95,7 @@ var Pzl;
                     if (parts.length === 1) {
                         parts.push(parts[0]); // fix to not fail or query
                     }
-                    var fql = "and(actor(" + actor.id + ",action:" + 1003 /* Modified */ + "),or(" + parts.join() + "))";
+                    var fql = "and(actor(" + actor.id + ",action:" + Insight.Action.Modified + "),or(" + parts.join() + "))";
                     var searchPayload = this.getPayload("*", fql);
                     this.postJson(searchPayload, function (data) {
                         var items = [];

@@ -43,8 +43,16 @@ var Pzl;
                             }
                             return count;
                         };
+                        //TODO: check if we need these
                         var lastState = "";
+                        var lastOpacity = 0;
                         this.highlightNode = function (node, highlightClass, opacity) {
+                            if (opacity === 1 && lastOpacity === 1)
+                                return;
+                            lastOpacity = opacity;
+                            var thisState = (node.id + opacity);
+                            if (thisState === lastState)
+                                return;
                             for (var i = this.links.length - 1; i >= 0; i--) {
                                 var link = this.links[i];
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
@@ -235,10 +243,11 @@ var Pzl;
                             }).on("mouseup", function (d) {
                                 //jQuery("#lala").hide();
                                 _this.highlightNode(d, "link", 1);
-                            }).on("mouseout", function (d) {
-                                //jQuery("#lala").hide();
-                                _this.highlightNode(d, "link", 1);
                             });
+                            //.on("mouseout", d => {
+                            //    //jQuery("#lala").hide();
+                            //    this.highlightNode(d, "link", 1);
+                            //});
                             force.on("tick", function () {
                                 link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });
                                 node.attr("transform", function (d) {

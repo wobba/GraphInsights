@@ -192,8 +192,7 @@ module Pzl.OfficeGraph.Insight {
             actor = getActorById(actorId);
         }
         setStatsComparisonActor(actor);
-
-        jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
+        jQuery("#avatar").attr("src", actor.pictureUrl.replace("MThumb", "LThumb"));
 
         jQuery("#message").empty();
         jQuery("#message").append(collabItemHighScore.getMetricString(actor));
@@ -209,6 +208,10 @@ module Pzl.OfficeGraph.Insight {
 
         jQuery("#message").append(itemStarterHighScore.getMetricString(actor));
         jQuery("#message").append(lastModifierHighScore.getMetricString(actor));
+
+        if (benchmarkActor.accountName.indexOf(_spPageContextInfo.userLoginName) === -1) {
+            jQuery("#message").html(jQuery("#message").html().replace("you", "<b>" + actor.name + "</b>"));
+        }
 
         //reset to benchmarkActor
         setStatsComparisonActor(lastBenchMarkActor);
@@ -372,6 +375,7 @@ module Pzl.OfficeGraph.Insight {
     function resetDataAndUI() {
         jQuery("#log").empty();
         jQuery("#message").empty();
+        jQuery("#avatar").attr("src", "");
         jQuery("#steplist option").remove();
         jQuery("#maxValue").text("1");
 
@@ -460,7 +464,7 @@ module Pzl.OfficeGraph.Insight {
 
                 runfunc.then(associates => {
                     setStatsComparisonActor(searchHelper.mainActor);
-//                    updateStats(searchHelper.mainActor, true);
+                    //                    updateStats(searchHelper.mainActor, true);
 
                     searchHelper.allReachedActors.put(searchHelper.mainActor.id, searchHelper.mainActor);
                     for (var i = 0; i < associates.length; i++) {

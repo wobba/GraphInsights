@@ -177,7 +177,7 @@ var Pzl;
                     actor = getActorById(actorId);
                 }
                 setStatsComparisonActor(actor);
-                jQuery(".statsArea").css("background-image", "url('" + actor.pictureUrl.replace("MThumb", "LThumb") + "');");
+                jQuery("#avatar").attr("src", actor.pictureUrl.replace("MThumb", "LThumb"));
                 jQuery("#message").empty();
                 jQuery("#message").append(collabItemHighScore.getMetricString(actor));
                 jQuery("#message").append(collabMinActorHightScore.getMetricString(actor));
@@ -190,6 +190,9 @@ var Pzl;
                 }
                 jQuery("#message").append(itemStarterHighScore.getMetricString(actor));
                 jQuery("#message").append(lastModifierHighScore.getMetricString(actor));
+                if (benchmarkActor.accountName.indexOf(_spPageContextInfo.userLoginName) === -1) {
+                    jQuery("#message").html(jQuery("#message").html().replace("you", "<b>" + actor.name + "</b>"));
+                }
                 //reset to benchmarkActor
                 setStatsComparisonActor(lastBenchMarkActor);
             }
@@ -319,6 +322,7 @@ var Pzl;
             function resetDataAndUI() {
                 jQuery("#log").empty();
                 jQuery("#message").empty();
+                jQuery("#avatar").attr("src", "");
                 jQuery("#steplist option").remove();
                 jQuery("#maxValue").text("1");
                 lastfilterCount = 0;

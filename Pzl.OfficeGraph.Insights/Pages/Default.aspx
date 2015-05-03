@@ -74,6 +74,7 @@
     <div class="container">
         <div class="statsArea">
             <div id="message"></div>
+            <img id="avatar"/>
         </div>
         <div class="graphArea">
             <div id="forceGraph">

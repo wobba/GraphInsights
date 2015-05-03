@@ -68,9 +68,16 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return count;
             };
 
+            //TODO: check if we need these
             var lastState = "";
-
+            var lastOpacity = 0;
             this.highlightNode = function (node, highlightClass: string, opacity: number) {
+                if (opacity === 1 && lastOpacity === 1) return;
+                lastOpacity = opacity;
+
+                var thisState = (node.id + opacity);
+                if (thisState === lastState) return;
+
                 for (var i = this.links.length - 1; i >= 0; i--) {
                     var link = this.links[i];
                     var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
@@ -88,7 +95,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                         this.updateCallback(node.actorId);
                     } else {
                         this.updateCallback(0);
-                    }                    
+                    }
                 }
 
             };
@@ -124,7 +131,7 @@ module Pzl.OfficeGraph.Insight.Graph {
             }
 
             // Add and remove elements on the graph object
-            this.addNode = (name,actorId) => {
+            this.addNode = (name, actorId) => {
                 var idx = findNodeIndex(name);
                 if (idx === -1) {
                     this.nodes.push({ "id": name, "actorId": actorId });
@@ -214,7 +221,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 var id = "#Node" + this.validCssName(linkNodeA.id);
                 var numberOfLinks = this.linkCountNode(linkNodeA.id) - 1;
                 numberOfLinks = Math.min(16, numberOfLinks);
-                var r = 16 * (1 + numberOfLinks / 16);                
+                var r = 16 * (1 + numberOfLinks / 16);
                 d3.select(id).attr("r", r);
 
 
@@ -222,7 +229,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                 id = "#Node" + this.validCssName(linkNodeB.id);
                 numberOfLinks = this.linkCountNode(linkNodeB.id) - 1;
                 numberOfLinks = Math.min(16, numberOfLinks);
-                r = 16 * (1 + numberOfLinks / 16);          
+                r = 16 * (1 + numberOfLinks / 16);
                 d3.select(id).attr("r", r);
 
                 update();
@@ -332,10 +339,11 @@ module Pzl.OfficeGraph.Insight.Graph {
                     .on("mouseup", d => {
                     //jQuery("#lala").hide();
                     this.highlightNode(d, "link", 1);
-                }).on("mouseout", d => {
-                    //jQuery("#lala").hide();
-                    this.highlightNode(d, "link", 1);
                 });
+                //.on("mouseout", d => {
+                //    //jQuery("#lala").hide();
+                //    this.highlightNode(d, "link", 1);
+                //});
 
                 force.on("tick",() => {
                     link.attr("x1", d => d.source.x)
@@ -399,7 +407,7 @@ module Pzl.OfficeGraph.Insight.Graph {
     }
     export function init(domId: string, updateCallbackFunc: (actorId: number) => void): MyGraph {
         d3.select("svg")
-            .remove();        
+            .remove();
         return initGraph(domId, updateCallbackFunc);
     }
 }
