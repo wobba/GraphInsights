@@ -198,11 +198,11 @@ var Pzl;
                             }
                             return null;
                         };
-                        // rescale g
-                        function rescale() {
-                            var trans = d3.event.translate;
-                            var scale = d3.event.scale;
-                            vis.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
+                        function dragstart(d) {
+                            d3.select(this).classed("fixed", d.fixed = true);
+                        }
+                        function dblclick(d) {
+                            d3.select(this).classed("fixed", d.fixed = false);
                         }
                         var w = jQuery("#" + domId).width();
                         var h = jQuery("#" + domId).height();
@@ -210,6 +210,7 @@ var Pzl;
                         var color = d3.scale.category20();
                         var vis = d3.select("#" + domId).append("svg:svg").attr("width", w).attr("height", h).attr("id", "svg").attr("pointer-events", "all").attr("viewBox", "0 0 " + w + " " + h).attr("perserveAspectRatio", "xMinYMid").append('svg:g');
                         var force = d3.layout.force();
+                        var drag = force.drag().on("dragstart", dragstart);
                         this.nodes = force.nodes();
                         this.links = force.links();
                         var fadeinTime = 500;
@@ -220,7 +221,7 @@ var Pzl;
                             link.append("title").text(function (d) { return d.value; });
                             link.exit().remove();
                             var node = vis.selectAll("g.node").data(_this.nodes, function (d) { return d.id; });
-                            var nodeEnter = node.enter().append("g").attr("class", "node").call(force.drag);
+                            var nodeEnter = node.enter().append("g").attr("class", "node").on("dblclick", dblclick).call(force.drag);
                             //nodeEnter.filter(d=> { return this.isSingleNode(d.id, 1) }).append("svg:circle")
                             //    .attr("r", r)
                             //    .attr("id", d => ("Node" + this.validCssName(d.id)))
@@ -238,10 +239,7 @@ var Pzl;
                             node.exit().remove();
                             node.on("mousedown", function (d) {
                                 _this.highlightNode(d, "linkHightLight", .2);
-                                //jQuery("#lala").css({ top: (d.y + 20), left: (d.x + 40) }).show();
-                                //put actor image + data
                             }).on("mouseup", function (d) {
-                                //jQuery("#lala").hide();
                                 _this.highlightNode(d, "link", 1);
                             });
                             //.on("mouseout", d => {
@@ -251,22 +249,6 @@ var Pzl;
                             force.on("tick", function () {
                                 link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });
                                 node.attr("transform", function (d) {
-                                    // keep nodes inside canvas - code by mikael
-                                    //var move = 50;
-                                    //if (d.x < 0) {
-                                    //    d.x = move;
-                                    //}
-                                    //if (d.x > w) {
-                                    //    d.x = w - move; // to keep labels visible
-                                    //}
-                                    //if (d.y < 0) {
-                                    //    d.y = move;
-                                    //    d.x = d.x + move;
-                                    //}
-                                    //if (d.y > h) {
-                                    //    d.y = h - move;
-                                    //    d.x = d.x - move;
-                                    //}
                                     return "translate(" + d.x + "," + d.y + ")";
                                 });
                             });

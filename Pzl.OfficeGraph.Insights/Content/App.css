@@ -16,6 +16,12 @@
 .node {
     stroke: #fff;
     stroke-width: 2px;
+    cursor: move;
+}
+
+.node.fixed {
+  /*fill: #f00;*/
+  stroke: #000;
 }
 
 .nodeStrokeClass {

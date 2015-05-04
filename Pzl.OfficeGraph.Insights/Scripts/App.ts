@@ -210,7 +210,7 @@ module Pzl.OfficeGraph.Insight {
         jQuery("#message").append(lastModifierHighScore.getMetricString(actor));
 
         if (benchmarkActor.accountName.indexOf(_spPageContextInfo.userLoginName) === -1) {
-            jQuery("#message").html(jQuery("#message").html().replace("you", "<b>" + actor.name + "</b>"));
+            jQuery("#message").html(jQuery("#message").html().replace("you", "<b>" + actor.name + "</b>").replace("You", "<b>" + actor.name + "</b>"));
         }
 
         //reset to benchmarkActor

@@ -242,14 +242,12 @@ module Pzl.OfficeGraph.Insight.Graph {
                 return null;
             }
 
-            // rescale g
-            function rescale() {
-                var trans = d3.event.translate;
-                var scale = d3.event.scale;
+            function dragstart(d) {
+                d3.select(this).classed("fixed", d.fixed = true);
+            }
 
-                vis.attr("transform",
-                    "translate(" + trans + ")"
-                    + " scale(" + scale + ")");
+            function dblclick(d) {
+                d3.select(this).classed("fixed", d.fixed = false);
             }
 
             var w = jQuery("#" + domId).width();
@@ -271,6 +269,10 @@ module Pzl.OfficeGraph.Insight.Graph {
                 ;
 
             var force = d3.layout.force();
+
+            var drag = force.drag()
+                .on("dragstart", dragstart);
+
 
             this.nodes = force.nodes();
             this.links = force.links();
@@ -297,6 +299,7 @@ module Pzl.OfficeGraph.Insight.Graph {
 
                 var nodeEnter = node.enter().append("g")
                     .attr("class", "node")
+                    .on("dblclick", dblclick)
                     .call(force.drag);
 
                 //nodeEnter.filter(d=> { return this.isSingleNode(d.id, 1) }).append("svg:circle")
@@ -333,11 +336,8 @@ module Pzl.OfficeGraph.Insight.Graph {
 
                 node.on("mousedown", d => {
                     this.highlightNode(d, "linkHightLight", .2);
-                    //jQuery("#lala").css({ top: (d.y + 20), left: (d.x + 40) }).show();
-                    //put actor image + data
                 })
                     .on("mouseup", d => {
-                    //jQuery("#lala").hide();
                     this.highlightNode(d, "link", 1);
                 });
                 //.on("mouseout", d => {
@@ -351,24 +351,7 @@ module Pzl.OfficeGraph.Insight.Graph {
                         .attr("x2", d => d.target.x)
                         .attr("y2", d => d.target.y);
 
-                    node.attr("transform", d => {                        
-                        // keep nodes inside canvas - code by mikael
-                        //var move = 50;
-                        //if (d.x < 0) {
-                        //    d.x = move;
-                        //}
-                        //if (d.x > w) {
-                        //    d.x = w - move; // to keep labels visible
-                        //}
-                        //if (d.y < 0) {
-                        //    d.y = move;
-                        //    d.x = d.x + move;
-                        //}
-                        //if (d.y > h) {
-                        //    d.y = h - move;
-                        //    d.x = d.x - move;
-                        //}
-
+                    node.attr("transform", d => {
                         return "translate(" + d.x + "," + d.y + ")";
                     });
                 });
