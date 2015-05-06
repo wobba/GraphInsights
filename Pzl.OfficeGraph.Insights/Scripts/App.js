@@ -366,7 +366,7 @@ var Pzl;
             function queueActorForGraph(actor, count) {
                 Q.delay(count * 500).then(function () {
                     Insight.searchHelper.loadCollabModifiedItemsForActor(actor).then(function (items) {
-                        if (items.length > 0) {
+                        if (items.length > 0 || (actor.id === benchmarkActor.id)) {
                             actor.collabItems = items;
                             console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
                             graphEdges(actor, count === Insight.searchHelper.allReachedActors.size());
@@ -427,7 +427,11 @@ var Pzl;
                                 if (associate.id === Insight.searchHelper.mainActor.id) {
                                     continue;
                                 }
-                                loadColleaguesFor(i, associates.length, associate, reach).done(function (isLastActor) {
+                                var secondLevelReach = reach;
+                                if (reach > 7) {
+                                    secondLevelReach = Math.round(Math.sqrt(reach));
+                                }
+                                loadColleaguesFor(i, associates.length, associate, secondLevelReach).done(function (isLastActor) {
                                     if (isLastActor) {
                                         loadEdgesForAll();
                                     }

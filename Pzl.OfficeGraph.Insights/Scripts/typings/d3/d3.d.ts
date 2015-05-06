@@ -1340,7 +1340,7 @@ declare module D3 {
             stop(): ForceLayout;
             tick(): ForceLayout;
             on(type: string, listener: () => void ): ForceLayout;
-            drag(): ForceLayout;
+            drag(): Behavior.Drag;
         }
 
         export interface BundleLayout{

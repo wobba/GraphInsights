@@ -201,9 +201,11 @@ var Pzl;
                         function dragstart(d) {
                             d3.select(this).classed("fixed", d.fixed = true);
                         }
+                        ;
                         function dblclick(d) {
                             d3.select(this).classed("fixed", d.fixed = false);
                         }
+                        ;
                         var w = jQuery("#" + domId).width();
                         var h = jQuery("#" + domId).height();
                         var r = 16;

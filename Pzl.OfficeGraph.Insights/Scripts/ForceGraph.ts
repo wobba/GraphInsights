@@ -172,9 +172,9 @@ module Pzl.OfficeGraph.Insight.Graph {
                 update();
             };
 
-            this.maxCount = function () {
+            this.maxCount = function() {
                 return this.maxCountB;
-            }
+            };
 
             this.addLink = (source: string, target: string, value: number) => {
                 if (source > target) {
@@ -240,15 +240,15 @@ module Pzl.OfficeGraph.Insight.Graph {
                     if (this.nodes[i]["id"] === id) return this.nodes[i];
                 }
                 return null;
-            }
+            };
 
             function dragstart(d) {
                 d3.select(this).classed("fixed", d.fixed = true);
-            }
+            };
 
             function dblclick(d) {
                 d3.select(this).classed("fixed", d.fixed = false);
-            }
+            };
 
             var w = jQuery("#" + domId).width();
             var h = jQuery("#" + domId).height();

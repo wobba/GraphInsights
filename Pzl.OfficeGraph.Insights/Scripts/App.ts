@@ -422,7 +422,7 @@ module Pzl.OfficeGraph.Insight {
     function queueActorForGraph(actor: Actor, count: number) {
         Q.delay(count * 500).then(() => {
             searchHelper.loadCollabModifiedItemsForActor(actor).then(items => {
-                if (items.length > 0) {
+                if (items.length > 0 || (actor.id === benchmarkActor.id)) {
                     actor.collabItems = items;
                     console.log("Collab actors and items:" + actor.name + " : " + actor.getCollaborationActorCount() + ":" + actor.getCollaborationItemCount());
                     graphEdges(actor, count === searchHelper.allReachedActors.size());
@@ -476,8 +476,11 @@ module Pzl.OfficeGraph.Insight {
                         if (associate.id === searchHelper.mainActor.id) {
                             continue; // skip main actor - as we have loaded colleagues already
                         }
-
-                        loadColleaguesFor(i, associates.length, associate, reach).done(isLastActor => {
+                        var secondLevelReach = reach;
+                        if (reach > 7) {
+                            secondLevelReach = Math.round(Math.sqrt(reach));
+                        }
+                        loadColleaguesFor(i, associates.length, associate, secondLevelReach).done(isLastActor => {
                             if (isLastActor) {
                                 loadEdgesForAll();
                             }
