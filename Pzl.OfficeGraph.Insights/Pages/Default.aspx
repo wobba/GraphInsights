@@ -38,7 +38,7 @@
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
     <div style="display: table-cell;vertical-align: middle">
-        Collaboration Insights by
+        CollaboGraph by
         <img src="../Images/Puzzlepart_logo.png" style="height: 40px; position:relative; top:8px" />
     </div>
 </asp:Content>
