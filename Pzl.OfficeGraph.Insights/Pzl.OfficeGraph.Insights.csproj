@@ -43,10 +43,13 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Images\CollaboGraph.pdn" />
     <None Include="packages.config" />
     <None Include="Pages\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{53e283f2-348d-4033-bed9-a27dc8436681}</SharePointProjectItemId>
     </None>
+    <None Include="Images\CollaboGraph-shot1.png" />
+    <None Include="Images\CollaboGraph.png" />
     <Content Include="Images\Puzzlepart-Donut-Digital-watermark.png" />
     <Content Include="Images\Puzzlepart_logo.png" />
     <Content Include="Pages\Elements.xml" />

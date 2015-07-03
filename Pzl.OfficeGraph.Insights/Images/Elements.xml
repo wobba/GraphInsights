@@ -4,5 +4,8 @@
     <File Path="Images\AppIcon.png" Url="Images/AppIcon.png" ReplaceContent="TRUE" />
     <File Path="Images\Puzzlepart_logo.png" Url="Images/Puzzlepart_logo.png" ReplaceContent="TRUE" />
     <File Path="Images\Puzzlepart-Donut-Digital-watermark.png" Url="Images/Puzzlepart-Donut-Digital-watermark.png" ReplaceContent="TRUE" />
+    <File Path="Images\CollaboGraph.png" Url="Images/CollaboGraph.png" ReplaceContent="TRUE" />
+    <File Path="Images\CollaboGraph.pdn" Url="Images/CollaboGraph.pdn" ReplaceContent="TRUE" />
+    <File Path="Images\CollaboGraph-shot1.png" Url="Images/CollaboGraph-shot1.png" ReplaceContent="TRUE" />
   </Module>
 </Elements>

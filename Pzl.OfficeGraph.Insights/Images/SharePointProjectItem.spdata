@@ -5,5 +5,8 @@
     <ProjectItemFile Source="AppIcon.png" Target="Images\" Type="ElementFile" />
     <ProjectItemFile Source="Puzzlepart_logo.png" Target="Images\" Type="ElementFile" />
     <ProjectItemFile Source="Puzzlepart-Donut-Digital-watermark.png" Target="Images\" Type="ElementFile" />
+    <ProjectItemFile Source="CollaboGraph.png" Target="Images\" Type="ElementFile" />
+    <ProjectItemFile Source="CollaboGraph.pdn" Target="Images\" Type="ElementFile" />
+    <ProjectItemFile Source="CollaboGraph-shot1.png" Target="Images\" Type="ElementFile" />
   </Files>
 </ProjectItem>
