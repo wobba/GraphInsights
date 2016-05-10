@@ -2,12 +2,12 @@
 <!--Created:cb85b80c-f585-40ff-8bfc-12ff4d0e34a9-->
 <App xmlns="http://schemas.microsoft.com/sharepoint/2012/app/manifest"
      Name="PzlOfficeGraphInsights"
-     ProductID="{53e283f2-348d-4033-bed9-a27dc8436681}"
+     ProductID="{99E04835-B013-49CE-A120-DA66D548F9DA}"
      Version="1.0.0.1"
      SharePointMinVersion="16.0.0.0"
 >
   <Properties>
-    <Title>CollaboGraph by Puzzlepart</Title>
+    <Title>Office Worker Collaboration Graph by Puzzlepart</Title>
     <StartPage>~appWebUrl/Pages/Default.aspx?{StandardTokens}</StartPage>
     <SupportedLocales>
       <SupportedLocale CultureName="en-US" />

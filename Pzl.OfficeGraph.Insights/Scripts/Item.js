@@ -13,7 +13,8 @@ var Pzl;
                     var edits = 0;
                     for (var i = 0; i < this.rawEdges.length; i++) {
                         var edge = this.rawEdges[i];
-                        if ((mode === 0 /* ActorOnly */ && edge.actorId === actor.id) || (mode === 1 /* AllButActor */ && edge.actorId !== actor.id)) {
+                        if ((mode === Inclusion.ActorOnly && edge.actorId === actor.id)
+                            || (mode === Inclusion.AllButActor && edge.actorId !== actor.id)) {
                             edits = edits + edge.weight;
                         }
                     }
@@ -68,7 +69,7 @@ var Pzl;
                     return Math.round(d.asDays());
                 };
                 return Item;
-            })();
+            }());
             Insight.Item = Item;
             (function (Inclusion) {
                 Inclusion[Inclusion["ActorOnly"] = 0] = "ActorOnly";

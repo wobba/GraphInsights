@@ -57,10 +57,12 @@ var Pzl;
                                 var link = this.links[i];
                                 var id = "line#" + this.validCssName(link.source.id + "-" + link.target.id);
                                 if ((link.source.id === node.id || link.target.id === node.id) && link.count > this.hideCount) {
-                                    d3.select(id).transition().style("opacity", 1).attr("class", highlightClass);
+                                    d3.select(id).transition().style("opacity", 1)
+                                        .attr("class", highlightClass);
                                 }
                                 else if (link.count > this.hideCount) {
-                                    d3.select(id).transition().style("opacity", opacity).attr("class", "link");
+                                    d3.select(id).transition().style("opacity", opacity)
+                                        .attr("class", "link");
                                 }
                             }
                             if (lastState !== (node.id + opacity)) {
@@ -156,7 +158,8 @@ var Pzl;
                             var found = false;
                             for (var i = 0; i < _this.links.length; i++) {
                                 // links are the same if source/target are the same
-                                if ((_this.links[i].source.id === source && _this.links[i].target.id === target) || (_this.links[i].source.id === target && _this.links[i].target.id === source)) {
+                                if ((_this.links[i].source.id === source && _this.links[i].target.id === target)
+                                    || (_this.links[i].source.id === target && _this.links[i].target.id === source)) {
                                     found = true;
                                     _this.links[i].count += 1; // keep track of number of collabs between actors
                                     // existing link - shorten to show closeness
@@ -210,20 +213,39 @@ var Pzl;
                         var h = jQuery("#" + domId).height();
                         var r = 16;
                         var color = d3.scale.category20();
-                        var vis = d3.select("#" + domId).append("svg:svg").attr("width", w).attr("height", h).attr("id", "svg").attr("pointer-events", "all").attr("viewBox", "0 0 " + w + " " + h).attr("perserveAspectRatio", "xMinYMid").append('svg:g');
+                        var vis = d3.select("#" + domId)
+                            .append("svg:svg")
+                            .attr("width", w)
+                            .attr("height", h)
+                            .attr("id", "svg")
+                            .attr("pointer-events", "all")
+                            .attr("viewBox", "0 0 " + w + " " + h)
+                            .attr("perserveAspectRatio", "xMinYMid")
+                            .append('svg:g');
                         var force = d3.layout.force();
-                        var drag = force.drag().on("dragstart", dragstart);
+                        var drag = force.drag()
+                            .on("dragstart", dragstart);
                         this.nodes = force.nodes();
                         this.links = force.links();
                         var fadeinTime = 500;
                         var update = function () {
-                            var link = vis.selectAll("line").data(_this.links, function (d) { return (d.source.id + "-" + d.target.id); });
-                            link.enter().append("line").attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); }).attr("stroke-width", function (d) { return (d.value / 10); }).attr("class", "link linkHidden").transition().duration(fadeinTime).style("opacity", 1);
+                            var link = vis.selectAll("line")
+                                .data(_this.links, function (d) { return (d.source.id + "-" + d.target.id); });
+                            link.enter().append("line")
+                                .attr("id", function (d) { return (_this.validCssName(d.source.id + "-" + d.target.id)); })
+                                .attr("stroke-width", function (d) { return (d.value / 10); })
+                                .attr("class", "link linkHidden")
+                                .transition().duration(fadeinTime).style("opacity", 1);
                             //d3.selectAll(id).transition().duration(animDuration).style("opacity", 1);
-                            link.append("title").text(function (d) { return d.value; });
+                            link.append("title")
+                                .text(function (d) { return d.value; });
                             link.exit().remove();
-                            var node = vis.selectAll("g.node").data(_this.nodes, function (d) { return d.id; });
-                            var nodeEnter = node.enter().append("g").attr("class", "node").on("dblclick", dblclick).call(force.drag);
+                            var node = vis.selectAll("g.node")
+                                .data(_this.nodes, function (d) { return d.id; });
+                            var nodeEnter = node.enter().append("g")
+                                .attr("class", "node")
+                                .on("dblclick", dblclick)
+                                .call(force.drag);
                             //nodeEnter.filter(d=> { return this.isSingleNode(d.id, 1) }).append("svg:circle")
                             //    .attr("r", r)
                             //    .attr("id", d => ("Node" + this.validCssName(d.id)))
@@ -236,12 +258,24 @@ var Pzl;
                             //    .attr("class", "nodeStrokeClass")
                             //    .attr("fill", d => color(d.id))
                             //    .style("opacity", 0);
-                            nodeEnter.append("svg:circle").attr("r", r).attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); }).attr("class", "nodeStrokeClass").attr("fill", function (d) { return color(d.id); }).transition().duration(fadeinTime).style("opacity", 1);
-                            nodeEnter.append("svg:text").attr("class", "textClass").attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); }).attr("x", 18).attr("y", ".31em").transition().duration(fadeinTime).style("opacity", 1).text(function (d) { return d.id; });
+                            nodeEnter.append("svg:circle")
+                                .attr("r", r)
+                                .attr("id", function (d) { return ("Node" + _this.validCssName(d.id)); })
+                                .attr("class", "nodeStrokeClass")
+                                .attr("fill", function (d) { return color(d.id); })
+                                .transition().duration(fadeinTime).style("opacity", 1);
+                            nodeEnter.append("svg:text")
+                                .attr("class", "textClass")
+                                .attr("id", function (d) { return ("NodeText" + _this.validCssName(d.id)); })
+                                .attr("x", 18)
+                                .attr("y", ".31em")
+                                .transition().duration(fadeinTime).style("opacity", 1)
+                                .text(function (d) { return d.id; });
                             node.exit().remove();
                             node.on("mousedown", function (d) {
                                 _this.highlightNode(d, "linkHightLight", .2);
-                            }).on("mouseup", function (d) {
+                            })
+                                .on("mouseup", function (d) {
                                 _this.highlightNode(d, "link", 1);
                             });
                             //.on("mouseout", d => {
@@ -249,7 +283,10 @@ var Pzl;
                             //    this.highlightNode(d, "link", 1);
                             //});
                             force.on("tick", function () {
-                                link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; });
+                                link.attr("x1", function (d) { return d.source.x; })
+                                    .attr("y1", function (d) { return d.source.y; })
+                                    .attr("x2", function (d) { return d.target.x; })
+                                    .attr("y2", function (d) { return d.target.y; });
                                 node.attr("transform", function (d) {
                                     return "translate(" + d.x + "," + d.y + ")";
                                 });
@@ -257,13 +294,19 @@ var Pzl;
                             //http://stackoverflow.com/questions/9901565/charge-based-on-size-d3-force-layout
                             var k = Math.sqrt(20 / (w * h));
                             // Restart the force layout.
-                            force.charge(-10 / k).gravity(30 * k).friction(0.2).linkDistance(function (d) { return d.value; }).size([w, h]).start();
+                            force
+                                .charge(-10 / k)
+                                .gravity(30 * k)
+                                .friction(0.2) //default 0.9
+                                .linkDistance(function (d) { return d.value; })
+                                .size([w, h])
+                                .start();
                         };
                         // Make it all go
                         update();
                     }
                     return MyGraph;
-                })();
+                }());
                 Graph.MyGraph = MyGraph;
                 function initGraph(domId, updateCallbackFunc) {
                     graph = new MyGraph(domId);
@@ -280,7 +323,8 @@ var Pzl;
                 }
                 Graph.keepNodesOnTop = keepNodesOnTop;
                 function init(domId, updateCallbackFunc) {
-                    d3.select("svg").remove();
+                    d3.select("svg")
+                        .remove();
                     return initGraph(domId, updateCallbackFunc);
                 }
                 Graph.init = init;

@@ -66,7 +66,7 @@
     <None Include="Images\CollaboGraph.pdn" />
     <None Include="packages.config" />
     <None Include="Pages\SharePointProjectItem.spdata">
-      <SharePointProjectItemId>{53e283f2-348d-4033-bed9-a27dc8436681}</SharePointProjectItemId>
+      <SharePointProjectItemId>{99E04835-B013-49CE-A120-DA66D548F9DA}</SharePointProjectItemId>
     </None>
     <None Include="Images\CollaboGraph-shot1.png" />
     <None Include="Images\CollaboGraph.png" />

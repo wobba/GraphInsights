@@ -39,7 +39,7 @@
 <%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
 <asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
     <div style="display: table-cell;vertical-align: middle">
-        CollaboGraph by
+        Office Worker Collaboration Graph by
         <img src="../Images/Puzzlepart_logo.png" style="height: 40px; position:relative; top:8px" />
     </div>
 </asp:Content>
@@ -75,7 +75,7 @@
     <div class="container">
         <div class="statsArea">
             <div id="message"></div>
-            <img id="avatar"/>
+            <img id="avatar" onerror="this.style.display = 'none';" onload="this.style.display = 'block';" />
         </div>
         <div class="graphArea">
             <div id="forceGraph">

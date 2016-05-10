@@ -3,11 +3,10 @@
 ///<reference path="typings/d3/d3.d.ts" /> 
 ///<reference path="typings/hashtable/hashtable.d.ts" /> 
 'use strict';
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 //ExecuteOrDelayUntilScriptLoaded(initializePage, "sp.js");
 var Pzl;
@@ -46,7 +45,7 @@ var Pzl;
                     this.value = value;
                 }
                 return HighScoreEntry;
-            })();
+            }());
             var HighScoreComparison = (function () {
                 function HighScoreComparison(template) {
                     this.template = template;
@@ -55,9 +54,7 @@ var Pzl;
                 HighScoreComparison.prototype.getMetricString = function (benchMarkActor) {
                     if (this.rankValues.length === 0)
                         return "";
-                    this.rankValues.sort(function (a, b) {
-                        return b.value - a.value;
-                    });
+                    this.rankValues.sort(function (a, b) { return b.value - a.value; });
                     var topEntry = this.rankValues[0];
                     var compareActor = benchMarkActor;
                     var compareItems = this.rankValues.filter(function (item) { return (item.actor.id === compareActor.id); });
@@ -65,24 +62,29 @@ var Pzl;
                         return "";
                     var compareEntry = compareItems[0];
                     var index = this.rankValues.indexOf(compareEntry) + 1;
-                    return this.template.replace("{topActor}", topEntry.actor.name).replace("{topValue}", topEntry.value.toString()).replace("{benchmarkRank}", index.toString()).replace("{total}", this.rankValues.length.toString()).replace("{compareValue}", compareEntry.value.toString());
+                    return this.template
+                        .replace("{topActor}", topEntry.actor.name)
+                        .replace("{topValue}", topEntry.value.toString())
+                        .replace("{benchmarkRank}", index.toString())
+                        .replace("{total}", this.rankValues.length.toString())
+                        .replace("{compareValue}", compareEntry.value.toString());
                 };
                 return HighScoreComparison;
-            })();
+            }());
             var ItemCountHighScore = (function (_super) {
                 __extends(ItemCountHighScore, _super);
                 function ItemCountHighScore() {
                     _super.call(this, "<p>Most active collaborator is <b>{topActor}</b> co-authoring on <b>{topValue}</b> items, while you rank <b>#{benchmarkRank}</b> of </b>{total}</b>");
                 }
                 return ItemCountHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var ActorCountHighScore = (function (_super) {
                 __extends(ActorCountHighScore, _super);
                 function ActorCountHighScore() {
                     _super.call(this, "<p>Most social collaborator is <b>{topActor}</b> with a reach of <b>{topValue}</b> colleagues. You rank <b>#{benchmarkRank}</b> of </b>{total}</b> with a reach of <b>{compareValue}</b>");
                 }
                 return ActorCountHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var ActorLowCollaboratorHighScore = (function (_super) {
                 __extends(ActorLowCollaboratorHighScore, _super);
                 function ActorLowCollaboratorHighScore() {
@@ -92,9 +94,7 @@ var Pzl;
                 ActorLowCollaboratorHighScore.prototype.getMetricString = function (benchMarkActor) {
                     if (this.rankValues.length === 0)
                         return "";
-                    this.rankValues.sort(function (a, b) {
-                        return a.value - b.value;
-                    });
+                    this.rankValues.sort(function (a, b) { return a.value - b.value; });
                     var zeroCollaborators = this.rankValues.filter(function (item) { return item.value === 0; }).map(function (item) { return item.actor.name; });
                     if (zeroCollaborators.length > 0) {
                         this.template = "<p>The bunch of <b>{zero}</b> refuse to collaborate in public";
@@ -108,10 +108,15 @@ var Pzl;
                         return "";
                     var compareEntry = compareItems[0];
                     var index = this.rankValues.indexOf(compareEntry) + 1;
-                    return this.template.replace("{topActor}", topEntry.actor.name).replace("{topValue}", topEntry.value.toString()).replace("{benchmarkRank}", index.toString()).replace("{total}", this.rankValues.length.toString()).replace("{compareValue}", compareEntry.value.toString());
+                    return this.template
+                        .replace("{topActor}", topEntry.actor.name)
+                        .replace("{topValue}", topEntry.value.toString())
+                        .replace("{benchmarkRank}", index.toString())
+                        .replace("{total}", this.rankValues.length.toString())
+                        .replace("{compareValue}", compareEntry.value.toString());
                 };
                 return ActorLowCollaboratorHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var EgoHighScore = (function (_super) {
                 __extends(EgoHighScore, _super);
                 function EgoHighScore() {
@@ -124,35 +129,35 @@ var Pzl;
                     return metric.replace("{collab}", count.toString());
                 };
                 return EgoHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var FrequentSaverHighScore = (function (_super) {
                 __extends(FrequentSaverHighScore, _super);
                 function FrequentSaverHighScore() {
                     _super.call(this, "<p><b>{topActor}</b> is the most frequent saver with an average of <b>{topValue}</b> saves per item. You rank <b>#{benchmarkRank}</b> of </b>{total} with an average of <b>{compareValue}</b> saves");
                 }
                 return FrequentSaverHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var TopSaverHighScore = (function (_super) {
                 __extends(TopSaverHighScore, _super);
                 function TopSaverHighScore() {
                     _super.call(this, "<p>If you're afraid to lose your work, talk to <b>{topActor}</b> who saved a single item a total of <b>{topValue}(!)</b> times. You rank <b>#{benchmarkRank}</b> of </b>{total} with a top save count of <b>{compareValue}</b>");
                 }
                 return TopSaverHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var ItemStarterHighScore = (function (_super) {
                 __extends(ItemStarterHighScore, _super);
                 function ItemStarterHighScore() {
                     _super.call(this, "<p>#1 item starter is <b>{topActor}</b> igniting a whopping <b>{topValue}</b> items. You rank <b>#{benchmarkRank}</b> of </b>{total} by creating <b>{compareValue}</b> new item(s)");
                 }
                 return ItemStarterHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             var LastModifierHighScore = (function (_super) {
                 __extends(LastModifierHighScore, _super);
                 function LastModifierHighScore() {
                     _super.call(this, "<p>Last dude on the ball <b>{topValue}</b> times was <b>{topActor}</b>. You rank <b>#{benchmarkRank}</b> of </b>{total} with a measly <b>{compareValue}</b> save(s)");
                 }
                 return LastModifierHighScore;
-            })(HighScoreComparison);
+            }(HighScoreComparison));
             Insight.searchHelper = new Insight.SearchHelper();
             var graphCanvas, edgeLength = 400, collabItemHighScore = new ItemCountHighScore(), collabActorHighScore = new ActorCountHighScore(), collabMinActorHightScore = new ActorLowCollaboratorHighScore(), collabEgoHighScore = new EgoHighScore(), frequentSaverHighScore = new FrequentSaverHighScore(), topSaverHighScore = new TopSaverHighScore(), itemStarterHighScore = new ItemStarterHighScore, lastModifierHighScore = new LastModifierHighScore, longestItem, benchmarkActor;
             function getActorById(actorId) {
@@ -301,6 +306,7 @@ var Pzl;
                         pause++;
                         for (var edgeCount = 0; edgeCount < item.rawEdges.length; edgeCount++) {
                             if (hasEdge(item.rawEdges[edgeCount], actor)) {
+                                //console.log("edge seen");
                                 continue;
                             }
                             //var name = getAssociateNameById(item.rawEdges[edgeCount].actorId);
@@ -374,27 +380,13 @@ var Pzl;
                         }
                         if (count === Insight.searchHelper.allReachedActors.size()) {
                             log("All actors on edge have been cast!");
-                            Q.delay(3500).then(function () {
-                                log("");
-                            });
+                            Q.delay(3500).then(function () { log(""); });
                         }
                     });
                 });
             }
             function loadEdgesForAll() {
-                Q.delay(1000).then(function () {
-                    log("5");
-                }).delay(1000).then(function () {
-                    log("4");
-                }).delay(1000).then(function () {
-                    log("3");
-                }).delay(1000).then(function () {
-                    log("2");
-                }).delay(1000).then(function () {
-                    log("1");
-                }).delay(1000).then(function () {
-                    log("GO!");
-                }).then(function () {
+                Q.delay(1000).then(function () { log("5"); }).delay(1000).then(function () { log("4"); }).delay(1000).then(function () { log("3"); }).delay(1000).then(function () { log("2"); }).delay(1000).then(function () { log("1"); }).delay(1000).then(function () { log("GO!"); }).then(function () {
                     var count = 0;
                     Insight.searchHelper.allReachedActors.each(function (actorId, actor) {
                         count++;
@@ -425,7 +417,7 @@ var Pzl;
                                     Insight.searchHelper.allReachedActors.put(associate.id, associate);
                                 }
                                 if (associate.id === Insight.searchHelper.mainActor.id) {
-                                    continue;
+                                    continue; // skip main actor - as we have loaded colleagues already
                                 }
                                 var secondLevelReach = reach;
                                 if (reach > 7) {
@@ -450,9 +442,7 @@ var Pzl;
 })(Pzl || (Pzl = {}));
 //http://www.getcodesamples.com/src/56AF1EC1/BBFD4D7A
 $(document).ready(function () {
-    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
-        loadPeoplePicker("peoplePickerDiv");
-    });
+    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () { loadPeoplePicker("peoplePickerDiv"); });
 });
 var peoplePickerActor = null;
 //Load the people picker
